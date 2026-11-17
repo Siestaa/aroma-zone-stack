@@ -1,6 +1,12 @@
 import { apiGet } from "@/lib/api/server";
+import { pageMetadata } from "@/lib/seo";
 import { PageTransition } from "@/components/transitions/PageTransition";
 import styles from "@/app/_shared/InfoPage.module.css";
+
+export const metadata = pageMetadata(
+  "/about", "О совместных закупках Aroma-Zone",
+  "Как устроена совместная закупка Aroma-Zone: от оформления заказа до выкупа товаров во Франции и отправки из Омска.",
+);
 
 // Original hardcoded copy — used only if /api/pages/about itself fails
 // (the endpoint's own default already covers "never edited in admin", see

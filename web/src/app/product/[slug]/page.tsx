@@ -1,8 +1,10 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ViewTransition } from "react";
+import { cache, ViewTransition } from "react";
 import { apiGet } from "@/lib/api/server";
 import type { ProductDetail } from "@/lib/api/types";
+import { pageMetadata, productPath } from "@/lib/seo";
 import { Tag } from "@/components/ui/Tag";
 import { ProductThumb } from "@/components/product/ProductThumb";
 import { FavoriteButton } from "@/components/product/FavoriteButton";
@@ -20,10 +22,23 @@ const PRODUCT_NOTE_FALLBACK = {
   body: "Цена в евро — как на сайте поставщика во Франции. Сумма в рублях пересчитывается по курсу на день выкупа заказа, а не на день оформления. Доставка из Франции бесплатна, вы оплачиваете только пересылку из Омска.",
 };
 
+const getProduct = cache((slug: string) => apiGet<ProductDetail>(`/products/${encodeURIComponent(slug)}`));
+
+export async function generateMetadata({ params }: PageProps<"/product/[slug]">): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await getProduct(slug);
+  if (!product) notFound();
+
+  const description = product.description.replace(/\s+/g, " ").trim()
+    || `${product.name} в каталоге Aroma-Zone. Совместная закупка из Франции с отправкой из Омска.`;
+  const preview = description.length > 160 ? `${description.slice(0, 159).replace(/\s+\S*$/, "")}…` : description;
+  return pageMetadata(productPath(product.slug), `${product.name} — Aroma-Zone`, preview);
+}
+
 export default async function ProductPage({ params }: PageProps<"/product/[slug]">) {
   const { slug } = await params;
   const [product, productNote] = await Promise.all([
-    apiGet<ProductDetail>(`/products/${slug}`),
+    getProduct(slug),
     apiGet<{ title: string; body: string }>("/pages/product-note"),
   ]);
   if (!product) notFound();

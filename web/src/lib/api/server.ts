@@ -7,7 +7,7 @@ import { cookies } from "next/headers";
 // session cookie since server-to-server fetch doesn't carry browser cookies
 // automatically. NEXT_PUBLIC_API_URL is the browser-facing (RTK Query) URL;
 // this is the separate server-only one.
-const API_INTERNAL_URL = process.env.API_INTERNAL_URL ?? "http://localhost:4000/api";
+export const API_INTERNAL_URL = process.env.API_INTERNAL_URL ?? "http://localhost:4000/api";
 
 export async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
   const cookieStore = await cookies();

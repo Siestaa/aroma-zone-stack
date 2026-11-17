@@ -4,12 +4,12 @@ import { Providers } from "./providers";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { MobileTabBar } from "@/components/layout/MobileTabBar";
+import { SITE_URL } from "@/lib/seo";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "аромазон-тут — совместные закупки Aroma-Zone",
-  description:
-    "Полный каталог Aroma-Zone (Франция) на русском. Выкупаем товар во Франции после оплаты, доставляем из Омска.",
+  metadataBase: new URL(SITE_URL),
+  title: { default: "Аромазон-тут — совместные закупки Aroma-Zone", template: "%s | Аромазон-тут" },
 };
 
 // viewportFit: "cover" lets the safe-area-inset-* env() vars used by

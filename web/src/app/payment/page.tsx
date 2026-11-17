@@ -1,6 +1,12 @@
 import { apiGet } from "@/lib/api/server";
+import { pageMetadata } from "@/lib/seo";
 import { PageTransition } from "@/components/transitions/PageTransition";
 import styles from "@/app/_shared/InfoPage.module.css";
+
+export const metadata = pageMetadata(
+  "/payment", "Оплата заказов Aroma-Zone",
+  "Как рассчитывается стоимость заказа Aroma-Zone и когда нужно оплатить его для выкупа во Франции.",
+);
 
 // Original hardcoded copy — used only if /api/pages/payment itself fails.
 // Blocks all render as .notice cards now (was: 1 .notice + 2 .methodCard

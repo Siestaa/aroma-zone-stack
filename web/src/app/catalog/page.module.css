@@ -61,6 +61,10 @@
   color: color-mix(in srgb, var(--ink) 55%, transparent);
 }
 
+.title {
+  margin: 0 0 var(--s4);
+}
+
 .toolbar {
   display: flex;
   flex-wrap: wrap;

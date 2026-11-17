@@ -1,6 +1,12 @@
 import { apiGet } from "@/lib/api/server";
+import { pageMetadata } from "@/lib/seo";
 import { PageTransition } from "@/components/transitions/PageTransition";
 import styles from "@/app/_shared/InfoPage.module.css";
+
+export const metadata = pageMetadata(
+  "/delivery", "Доставка заказов Aroma-Zone",
+  "Как получить заказ Aroma-Zone после выкупа во Франции. Условия отправки из Омска и получения заказа.",
+);
 
 // Original hardcoded copy — used only if /api/pages/delivery itself fails.
 const FALLBACK = {

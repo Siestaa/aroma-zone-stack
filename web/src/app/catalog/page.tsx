@@ -1,6 +1,8 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { apiGet } from "@/lib/api/server";
 import type { Category, ProductsResponse } from "@/lib/api/types";
+import { pageMetadata } from "@/lib/seo";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { PageTransition } from "@/components/transitions/PageTransition";
 import { Filters } from "./Filters";
@@ -8,6 +10,39 @@ import { CatalogSearch } from "./CatalogSearch";
 import { SortSelect } from "./SortSelect";
 import { Pagination } from "./Pagination";
 import styles from "./page.module.css";
+
+const catalogTitle = "Каталог Aroma-Zone";
+
+async function getCatalogCategories() {
+  return (await apiGet<{ categories: Category[] }>("/categories"))?.categories ?? [];
+}
+
+export async function generateMetadata({ searchParams }: PageProps<"/catalog">): Promise<Metadata> {
+  const params = await searchParams;
+  if (typeof params.q === "string" && params.q.trim()) {
+    return { title: "Поиск по каталогу", robots: { index: false, follow: true } };
+  }
+
+  const category = typeof params.category === "string" ? params.category : "";
+  const sortedByPrice = params.sort === "price-asc" || params.sort === "price-desc";
+  if (params.bio === "1" || category.includes(",") || sortedByPrice) {
+    return { title: catalogTitle, robots: { index: false, follow: true } };
+  }
+
+  const categoryName = category ? (await getCatalogCategories()).find(({ slug }) => slug === category)?.name : undefined;
+  if (category && !categoryName) return { title: catalogTitle, robots: { index: false, follow: true } };
+
+  const page = typeof params.page === "string" ? Number.parseInt(params.page, 10) : 1;
+  const canonical = new URLSearchParams();
+  if (category) canonical.set("category", category);
+  if (page > 1) canonical.set("page", String(page));
+  const query = canonical.toString();
+  const title = categoryName ? `${categoryName} — ${catalogTitle}` : catalogTitle;
+  const description = categoryName
+    ? `${categoryName} в каталоге Aroma-Zone на русском. Совместные закупки из Франции.`
+    : "Каталог французской косметики и ингредиентов Aroma-Zone с ценами и описаниями на русском.";
+  return pageMetadata(query ? `/catalog?${query}` : "/catalog", page > 1 ? `${title} — страница ${page}` : title, description);
+}
 
 export default async function CatalogPage({ searchParams }: PageProps<"/catalog">) {
   const params = await searchParams;
@@ -28,7 +63,7 @@ export default async function CatalogPage({ searchParams }: PageProps<"/catalog"
 
   const [data, categories] = await Promise.all([
     apiGet<ProductsResponse>(`/products?${qs.toString()}`),
-    apiGet<{ categories: Category[] }>("/categories").then((r) => r?.categories ?? []),
+    getCatalogCategories(),
   ]);
 
   const products = data?.products ?? [];
@@ -77,6 +112,7 @@ export default async function CatalogPage({ searchParams }: PageProps<"/catalog"
       <div className={styles.layout}>
         <Filters categories={categories} />
         <div>
+          <h1 className={styles.title}>{query ? "Поиск по каталогу" : activeCategoryNames.join(", ") || catalogTitle}</h1>
           <div className={styles.toolbar}>
             <CatalogSearch />
             <div className={styles.toolbarRight}>

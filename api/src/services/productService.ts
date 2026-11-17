@@ -142,6 +142,14 @@ export async function listProducts(params: ListProductsParams) {
   return { rows: rowsWithRub, totalCount, totalPages, currentPage, pageSize: PAGE_SIZE, fxRate };
 }
 
+export async function listSitemapProductSlugs(): Promise<string[]> {
+  const rows = await db.select({ slug: products.slug })
+    .from(products)
+    .where(eq(products.hidden, false))
+    .orderBy(products.slug);
+  return rows.map(({ slug }) => slug);
+}
+
 export async function getProductBySlug(slug: string) {
   const product = await db.query.products.findFirst({ where: eq(products.slug, slug) });
   if (!product || product.hidden) return null;

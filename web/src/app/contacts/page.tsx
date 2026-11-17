@@ -1,7 +1,13 @@
 import { apiGet } from "@/lib/api/server";
+import { pageMetadata } from "@/lib/seo";
 import { PageTransition } from "@/components/transitions/PageTransition";
 import { ContactForm } from "./ContactForm";
 import styles from "./page.module.css";
+
+export const metadata = pageMetadata(
+  "/contacts", "Контакты",
+  "Свяжитесь с организаторами совместных закупок Aroma-Zone, чтобы уточнить условия заказа, оплаты и доставки.",
+);
 
 // Original hardcoded copy — used only if /api/pages/contacts itself fails.
 const FALLBACK = {

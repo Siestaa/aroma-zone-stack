@@ -4,7 +4,14 @@ import type { Category, ProductListItem } from "@/lib/api/types";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { PageTransition } from "@/components/transitions/PageTransition";
 import { SearchBox } from "@/components/search/SearchBox";
+import { pageMetadata } from "@/lib/seo";
 import styles from "./page.module.css";
+
+export const metadata = pageMetadata(
+  "/",
+  { absolute: "Аромазон-тут — каталог Aroma-Zone и совместные закупки" },
+  "Каталог Aroma-Zone на русском. Выкупаем товары во Франции после оплаты и отправляем заказы из Омска.",
+);
 
 export default async function Home() {
   // Admin-picked and ordered when configured (admin panel's "Главная" page,

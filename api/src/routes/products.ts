@@ -5,6 +5,7 @@ import {
   getProductsByIds,
   listProducts,
   listCategoriesWithCounts,
+  listSitemapProductSlugs,
   SORT_VALUES,
   type SortValue,
 } from "../services/productService.js";
@@ -30,6 +31,8 @@ function parseQuery(raw: Record<string, unknown>) {
 }
 
 export async function productRoutes(app: FastifyInstance) {
+  app.get("/sitemap/products", async () => ({ slugs: await listSitemapProductSlugs() }));
+
   app.get("/products", async (request) => {
     const params = parseQuery(request.query as Record<string, unknown>);
     const result = await listProducts(params);
