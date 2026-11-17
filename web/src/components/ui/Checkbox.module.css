@@ -1,0 +1,48 @@
+.opt {
+  /* Visible row stays compact (a long checkbox list — e.g. catalog
+     category filters — would get uncomfortably tall at a real 48px row
+     height); the :global(.tap-target) class applied at the call site
+     expands the actual tap area instead, without changing this layout. */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 13.5px;
+  color: color-mix(in srgb, var(--ink) 82%, transparent);
+  cursor: pointer;
+}
+
+.box {
+  /* RadixCheckbox.Root renders a native <button> — explicit resets instead
+     of `all: unset` (see .opt's comment above for why: this element sits
+     inside a label that will get :global(.tap-target) at the call site,
+     and `all: unset` would strip the `position: relative` that needs). */
+  box-sizing: border-box;
+  border: 1.5px solid var(--line-strong);
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  appearance: none;
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  border-radius: 5px;
+  background: var(--paper-raised);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.box[data-state="checked"] {
+  background: var(--botanical);
+  border-color: var(--botanical);
+}
+
+.indicator {
+  color: var(--paper-raised);
+  display: flex;
+}

@@ -1,0 +1,245 @@
+.back {
+  display: inline-block;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 20px;
+}
+
+.card {
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.cardTitle {
+  font-size: 12.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+  margin: 0 0 12px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 13.5px;
+  border-bottom: 1px solid var(--line);
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--ink-muted);
+  margin: 8px 0 0;
+}
+
+/* A plain muted .hint read as too easy to miss next to Итого, so both the
+   "customer claims paid" and "not yet paid" states get their own colored
+   callout — green once the customer says they sent the money (still just
+   their claim, not proof — see the comment above this row in
+   OrderDetailPage.tsx, staff verify before touching the status select),
+   red while nothing has been claimed yet, so an order needing an actual
+   payment nudge stands out from one that's already progressing. */
+.paidCallout {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 12px 0 0;
+  line-height: 1.5;
+}
+
+.paidCalloutPaid {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.paidCalloutUnpaid {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.paidCalloutDot {
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.itemsTable {
+  width: 100%;
+}
+
+.itemsTable td {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13.5px;
+  vertical-align: middle;
+}
+
+.itemsTable tr:last-child td {
+  border-bottom: none;
+}
+
+.itemCell {
+  width: 100%;
+}
+
+.itemRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.thumbButton {
+  all: unset;
+  flex: 0 0 auto;
+  cursor: zoom-in;
+  border-radius: 6px;
+}
+
+.thumbButton:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.itemThumb {
+  display: block;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+}
+
+.itemThumbPlaceholder {
+  width: 64px;
+  height: 64px;
+  flex: 0 0 auto;
+  border-radius: 6px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+}
+
+.itemText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.itemName {
+  font-weight: 500;
+}
+
+.itemFormatBadge {
+  display: inline-block;
+  width: fit-content;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.itemSku {
+  color: var(--ink-muted);
+  font-size: 12px;
+}
+
+.itemOriginal {
+  color: var(--ink-muted);
+  font-size: 12px;
+}
+
+.itemSourceLink {
+  display: inline-block;
+  color: var(--ink-muted);
+  font-size: 12px;
+  width: fit-content;
+}
+
+/* `.itemsTable td` (class+type, specificity 0-1-1) would otherwise beat a
+   bare `.itemPrice` (0-1-0) and silently win the padding-left cascade with
+   its own `padding: 14px 0` shorthand — qualifying with the table class
+   too keeps this rule's specificity ahead of it. */
+.itemsTable td.itemPrice {
+  text-align: right;
+  white-space: nowrap;
+  padding-left: 16px;
+}
+
+.lightboxOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  cursor: zoom-out;
+  z-index: 20;
+}
+
+.lightboxImage {
+  max-width: min(600px, 100%);
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  background: var(--paper-raised);
+}
+
+.statusForm {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.statusSelect {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 10px;
+  background: var(--paper);
+  color: var(--ink);
+  flex: 1;
+}
+
+.saveButton {
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  background: var(--accent);
+  color: var(--paper-raised);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.saveButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.saved {
+  font-size: 12.5px;
+  color: var(--accent);
+  margin-top: 8px;
+}

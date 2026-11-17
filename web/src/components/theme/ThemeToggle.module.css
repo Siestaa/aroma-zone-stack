@@ -1,0 +1,33 @@
+.toggle {
+  /* Kept visually 32px (matches its neighbors in the header's icon row —
+     growing it alone would look inconsistent) — real 48px tap target comes
+     from the shared :global(.tap-target) utility applied at each call
+     site instead, not from this class. Explicit resets instead of
+     `all: unset`, which would also strip the position:relative that
+     utility needs (see globals.css's .tap-target comment). */
+  box-sizing: border-box;
+  border: none;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-pill);
+  background: none;
+  color: color-mix(in srgb, var(--ink) 80%, transparent);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.toggle:hover {
+  background: var(--paper);
+}
+
+.toggle svg {
+  width: 18px;
+  height: 18px;
+}

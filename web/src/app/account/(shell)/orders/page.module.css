@@ -1,0 +1,109 @@
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.table th {
+  text-align: left;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ink) 50%, transparent);
+  font-weight: 600;
+  padding-bottom: var(--s3);
+  border-bottom: 1px solid var(--line);
+}
+
+.table td {
+  padding: var(--s3) var(--s3) var(--s3) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.detailsLink {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-pill);
+  background: var(--paper);
+  color: var(--botanical-deep);
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.detailsLink:hover {
+  background: var(--botanical-deep);
+  color: var(--paper-raised);
+  border-color: var(--botanical-deep);
+}
+
+.detailsLink:active {
+  transform: scale(0.97);
+}
+
+/* Below 1024px a table just cramps its columns (the account shell's
+   sidebar is a fixed 180px regardless of viewport, so this stays tight
+   through tablet widths too, not just phones) — switch each row to a
+   stacked card instead, with td::before pulling the label from
+   data-label so the markup stays a single <table>, no separate
+   mobile-only JSX branch to keep in sync. */
+@media (max-width: 1023px) {
+  .tableWrap {
+    overflow-x: visible;
+  }
+
+  .table thead {
+    display: none;
+  }
+
+  .table,
+  .table tbody,
+  .table tr {
+    display: block;
+  }
+
+  .table tr {
+    margin-bottom: var(--s3);
+    padding: var(--s3) var(--s4);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--paper-raised);
+  }
+
+  .table tr:last-child {
+    margin-bottom: 0;
+  }
+
+  .table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s3);
+    padding: 7px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .table td:last-child {
+    border-bottom: none;
+  }
+
+  .table td::before {
+    content: attr(data-label);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--ink) 50%, transparent);
+    font-weight: 600;
+  }
+}

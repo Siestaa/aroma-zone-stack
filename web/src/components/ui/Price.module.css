@@ -1,0 +1,32 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  align-items: flex-start;
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.price {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.old {
+  font-family: var(--font-mono);
+  text-decoration: line-through;
+  color: color-mix(in srgb, var(--ink) 45%, transparent);
+  font-size: 0.85em;
+  font-weight: 400;
+}
+
+.approx {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: color-mix(in srgb, var(--ink) 50%, transparent);
+}

@@ -1,0 +1,4 @@
+.empty {
+  color: color-mix(in srgb, var(--ink) 55%, transparent);
+  font-size: 14px;
+}

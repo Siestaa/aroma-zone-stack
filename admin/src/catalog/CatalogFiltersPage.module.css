@@ -1,0 +1,151 @@
+.card {
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+  max-width: 520px;
+}
+
+.cardTitle {
+  font-size: 14px;
+  margin: 0 0 6px;
+}
+
+.hint {
+  font-size: 12.5px;
+  color: var(--ink-muted);
+  line-height: 1.5;
+  margin: 0 0 12px;
+}
+
+.selectActions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.selectActions button {
+  border: 1px solid var(--line);
+  background: var(--paper-raised);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.selectActions button:hover {
+  background: var(--paper);
+}
+
+.checkList {
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 4px 10px;
+}
+
+.checkRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 13px;
+  border-bottom: 1px solid var(--line);
+}
+
+.checkRow:last-child {
+  border-bottom: none;
+}
+
+.count {
+  margin-left: auto;
+  color: var(--ink-muted);
+  font-size: 12px;
+}
+
+.orderTitle {
+  font-size: 12.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+  margin: 18px 0 8px;
+}
+
+.orderList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.orderRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.orderRow:last-child {
+  border-bottom: none;
+}
+
+.orderName {
+  flex: 1;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.orderActions {
+  display: flex;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
+.orderActions button {
+  border: 1px solid var(--line);
+  background: var(--paper-raised);
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.orderActions button:hover:not(:disabled) {
+  background: var(--paper);
+}
+
+.orderActions button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.saveBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.saveButton {
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  background: var(--accent);
+  color: var(--paper-raised);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.saveButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.savedHint {
+  font-size: 13px;
+  color: var(--accent);
+}

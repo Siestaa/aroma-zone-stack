@@ -1,0 +1,45 @@
+.btn {
+  /* Explicit <button> resets instead of `all: unset` — that also reset
+     `position`, and which of this rule vs. a composed overlay class (e.g.
+     ProductCard's .favOverlay, position: absolute) won depended on
+     Turbopack's CSS module bundling order across files rather than
+     anything in the source, so it could silently regress (and did — the
+     button dropped into normal flow, stretching the card). Never reset
+     position from here; let the embedding context own it. */
+  box-sizing: border-box;
+  border: none;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 48px minimum touch target (WCAG 2.5.5 / common mobile-tap guidance) —
+     was 30px, too small to reliably tap. */
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--paper-raised) 85%, transparent);
+  box-shadow: var(--shadow);
+  color: color-mix(in srgb, var(--ink) 55%, transparent);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.btn:hover {
+  transform: scale(1.08);
+}
+
+.btn[data-active="true"] {
+  color: var(--rose, #c0517a);
+}
+
+.btn:disabled {
+  cursor: default;
+  opacity: 0.6;
+}

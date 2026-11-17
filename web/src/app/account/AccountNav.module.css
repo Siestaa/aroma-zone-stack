@@ -1,0 +1,210 @@
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13.5px;
+}
+
+.nav a {
+  /* Vertical padding bumped 10px->14px for the 48px tap-target minimum —
+     a real size increase, not the pseudo-element trick, since these are
+     already block-level rows with almost no gap between them (2px) to
+     safely expand into. */
+  padding: 14px 14px;
+  border-radius: var(--r-sm);
+  color: color-mix(in srgb, var(--ink) 55%, transparent);
+}
+
+.active {
+  background: var(--paper-raised);
+  box-shadow: var(--shadow);
+  color: var(--botanical-deep);
+  font-weight: 700;
+}
+
+.logoutBtn {
+  box-sizing: border-box;
+  border: none;
+  margin: 0;
+  font: inherit;
+  appearance: none;
+  background: none;
+  padding: 14px 14px;
+  border-radius: var(--r-sm);
+  color: color-mix(in srgb, var(--ink) 55%, transparent);
+  font-size: 13.5px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.logoutBtn:hover {
+  color: var(--ink);
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 80;
+  animation: overlayOut var(--duration-exit) ease forwards;
+}
+
+.overlay[data-state="open"] {
+  animation: overlayIn var(--duration-enter) ease forwards;
+}
+
+.confirmContent {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  width: min(90vw, 360px);
+  background: var(--paper-raised);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow);
+  padding: var(--s5);
+  z-index: 90;
+  animation: contentOut var(--duration-exit) ease forwards;
+}
+
+.confirmContent[data-state="open"] {
+  animation: contentIn var(--duration-enter) ease forwards;
+}
+
+.confirmTitle {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 var(--s5);
+  line-height: 1.4;
+}
+
+.confirmActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--s3);
+}
+
+.cancelBtn {
+  box-sizing: border-box;
+  border: 1px solid var(--line-strong);
+  margin: 0;
+  font: inherit;
+  appearance: none;
+  padding: 14px 18px;
+  border-radius: var(--r-sm);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cancelBtn:hover {
+  background: var(--line);
+}
+
+.confirmBtn {
+  box-sizing: border-box;
+  border: none;
+  margin: 0;
+  font: inherit;
+  appearance: none;
+  padding: 14px 18px;
+  border-radius: var(--r-sm);
+  background: var(--rose);
+  color: var(--paper-raised);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.confirmBtn:hover {
+  opacity: 0.9;
+}
+
+@keyframes overlayIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes overlayOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes contentIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes contentOut {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .confirmContent {
+    animation-duration: 1ms;
+  }
+}
+
+@media (max-width: 767px) {
+  .nav {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    /* Full-bleed: cancel out .layout's mobile side padding so the strip can
+       scroll edge-to-edge, then re-add the same padding here so the first/
+       last tab (and the active tab's box-shadow) aren't flush against the
+       screen edge or clipped by the scroll container. */
+    margin: 0 calc(var(--s4) * -1);
+    padding: 2px var(--s4) var(--s3);
+  }
+
+  .nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav a,
+  .nav span,
+  .logoutBtn {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  /* overflow-x: auto on .nav forces overflow-y to auto too (can't have
+     overflow-x auto with overflow-y visible per spec), so --shadow's large
+     0 8px 24px blur gets hard-clipped at the container's edge instead of
+     fading out — read as a shadow "cut off by the component below". A flat
+     bottom border reads fine for a horizontal tab strip and has no
+     vertical extent to clip. */
+  .active {
+    box-shadow: none;
+    border-bottom: 2px solid var(--botanical-deep);
+    border-radius: var(--r-sm) var(--r-sm) 0 0;
+  }
+}

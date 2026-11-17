@@ -1,0 +1,32 @@
+.tag {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+}
+
+.bio {
+  background: color-mix(in srgb, var(--botanical) 16%, transparent);
+  color: var(--botanical-deep);
+}
+
+.new {
+  background: color-mix(in srgb, var(--amber) 18%, transparent);
+  color: var(--amber-deep);
+}
+
+.sale {
+  background: color-mix(in srgb, var(--rose) 20%, transparent);
+  color: var(--rose);
+}
+
+.outOfStock {
+  background: color-mix(in srgb, var(--ink) 10%, transparent);
+  color: color-mix(in srgb, var(--ink) 58%, transparent);
+}

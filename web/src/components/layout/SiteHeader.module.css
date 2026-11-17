@@ -1,0 +1,116 @@
+.header {
+  border-bottom: 1px solid var(--line);
+  background: var(--paper-raised);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--s2) var(--s6);
+}
+
+.wordmark {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+}
+
+.wordmarkImg {
+  display: none;
+  height: 64px;
+  width: auto;
+}
+
+.wordmarkImgLight {
+  display: block;
+}
+
+@media (prefers-color-scheme: dark) {
+  :global(html:not([data-theme="light"])) .wordmarkImgLight {
+    display: none;
+  }
+
+  :global(html:not([data-theme="light"])) .wordmarkImgDark {
+    display: block;
+  }
+}
+
+:global(html[data-theme="dark"]) .wordmarkImgLight {
+  display: none;
+}
+
+:global(html[data-theme="dark"]) .wordmarkImgDark {
+  display: block;
+}
+
+.nav {
+  display: flex;
+  gap: var(--s5);
+  font-size: 13.5px;
+}
+
+.nav a {
+  color: color-mix(in srgb, var(--ink) 75%, transparent);
+  transition: color 0.15s ease;
+}
+
+.nav a:hover {
+  color: var(--ink);
+}
+
+.icons {
+  display: flex;
+  /* var(--s5) (24px), not var(--s4) — leaves enough real gap that each
+     item's :global(.tap-target) 48px hit zone doesn't cross into its
+     neighbor's. */
+  gap: var(--s5);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  align-items: center;
+}
+
+.icons a {
+  color: color-mix(in srgb, var(--ink) 80%, transparent);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  margin-left: 4px;
+  border-radius: var(--r-pill);
+  background: var(--botanical);
+  color: var(--paper-raised);
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.mobileBar {
+  display: none;
+  align-items: center;
+  gap: var(--s2);
+}
+
+@media (max-width: 767px) {
+  .inner {
+    padding: var(--s2) var(--s4);
+  }
+  .nav {
+    display: none;
+  }
+  .icons {
+    display: none;
+  }
+  .mobileBar {
+    display: flex;
+  }
+}

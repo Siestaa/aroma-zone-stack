@@ -1,0 +1,23 @@
+.layout {
+  /* Without an explicit width, this being a flex item (body is
+     display:flex/column, see globals.css) makes the auto side-margins
+     shrink it to its content's width instead of stretching to fill —
+     the grid (and the sidebar inside it) would then shift horizontally
+     depending on how wide the right-hand content happens to be per page
+     (e.g. "Заказов пока нет." vs a row of product cards). */
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: var(--s7);
+  padding: var(--s6);
+}
+
+@media (max-width: 767px) {
+  .layout {
+    grid-template-columns: 1fr;
+    gap: var(--s5);
+    padding: var(--s4);
+  }
+}

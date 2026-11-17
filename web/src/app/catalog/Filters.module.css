@@ -1,0 +1,196 @@
+.triggerWrap {
+  display: none;
+}
+
+.trigger {
+  box-sizing: border-box;
+  border: 1px solid var(--line-strong);
+  margin: 0;
+  font: inherit;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  /* Vertical padding bumped 7px->15px to clear the 48px tap-target
+     minimum for real (not via the pseudo-element trick) — this button has
+     room to grow without crowding anything else in the mobile filter bar. */
+  padding: 15px 14px;
+  border-radius: var(--r-pill);
+  background: var(--paper-raised);
+  color: var(--ink);
+  font-size: 12.5px;
+  font-weight: 700;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.trigger:hover {
+  background: var(--paper);
+}
+
+.trigger:active {
+  transform: scale(0.97);
+}
+
+.trigger svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 80;
+  animation: overlayOut var(--duration-exit) ease forwards;
+}
+
+.overlay[data-state="open"] {
+  animation: overlayIn var(--duration-enter) ease forwards;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(85vw, 320px);
+  display: flex;
+  flex-direction: column;
+  background: var(--paper-raised);
+  box-shadow: var(--shadow);
+  z-index: 90;
+  animation: drawerOut var(--duration-exit) ease forwards;
+}
+
+.drawer[data-state="open"] {
+  animation: drawerIn var(--duration-enter) ease forwards;
+}
+
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--s4);
+  border-bottom: 1px solid var(--line);
+}
+
+.drawerTitle {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.closeButton {
+  box-sizing: border-box;
+  border: none;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  appearance: none;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r-pill);
+  color: color-mix(in srgb, var(--ink) 80%, transparent);
+  cursor: pointer;
+}
+
+.closeButton:hover {
+  background: var(--paper);
+}
+
+.closeButton svg {
+  width: 18px;
+  height: 18px;
+}
+
+.drawerBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--s4);
+}
+
+.drawerFooter {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s4);
+  border-top: 1px solid var(--line);
+}
+
+.resetButton {
+  box-sizing: border-box;
+  border: none;
+  margin: 0;
+  font: inherit;
+  appearance: none;
+  background: none;
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  color: color-mix(in srgb, var(--ink) 60%, transparent);
+  cursor: pointer;
+  /* Vertical padding bumped 10px->14px for the 48px tap-target minimum. */
+  padding: 14px 4px;
+}
+
+.resetButton:hover {
+  color: var(--ink);
+}
+
+@media (max-width: 767px) {
+  .triggerWrap {
+    display: block;
+  }
+}
+
+@keyframes overlayIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes overlayOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes drawerIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes drawerOut {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .drawer {
+    animation-duration: 1ms;
+  }
+}

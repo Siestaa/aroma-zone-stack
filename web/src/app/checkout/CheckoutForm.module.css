@@ -1,0 +1,57 @@
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.success {
+  animation: popIn 0.28s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .success {
+    animation: none;
+  }
+}
+
+/* Inline links inside form hints/labels (СДЭК office finder, purchase
+   terms) — same colored-underline convention as contacts/page.module.css's
+   .communityCard a, so an inline link reads as clickable rather than plain
+   text. */
+.inlineLink {
+  color: var(--botanical-deep);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Holds the purchase-terms Checkbox and its link side by side as one
+   visual row — the link is a flex sibling of the checkbox's own <label>,
+   not nested inside it, see the comment at this row's call site. Font-size
+   set here (matching Checkbox.module.css's .opt) rather than on .inlineLink
+   itself, since .inlineLink is also used for the CDEK note inside a Field,
+   which needs to inherit that context's own (smaller) size instead. */
+.termsRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  font-size: 13.5px;
+}
+
+.checkmark {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto var(--s4);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--botanical) 16%, transparent);
+  color: var(--botanical-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+}

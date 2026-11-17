@@ -1,0 +1,20 @@
+# Reference systemd unit for the Next.js frontend (web/), production mode
+# (`next build` then `next start`). Same install steps as
+# aroma-zone-api.service — see that file's header comment.
+
+[Unit]
+Description=аромазон-тут frontend (Next.js)
+After=network.target aroma-zone-api.service
+Wants=aroma-zone-api.service
+
+[Service]
+Type=simple
+User=aromazone
+WorkingDirectory=/var/www/aroma-zone/web
+Environment=PORT=3000
+ExecStart=/usr/bin/npm run start
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

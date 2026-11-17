@@ -1,0 +1,261 @@
+/* CSS multi-column masonry (not a grid) so 3 cards of uneven height (short
+   "Категории на главной" vs. taller "Категории в футере"/"Лидеры продаж")
+   balance across columns instead of a grid's fixed-height rows stranding
+   the odd one out with empty space beside it — same fix as the admin
+   Settings page's card layout, see that page's CSS comment for the full
+   reasoning. */
+.grid {
+  columns: 320px 3;
+  column-gap: 16px;
+  margin-top: 16px;
+}
+
+.gridCard {
+  display: inline-block;
+  width: 100%;
+  break-inside: avoid;
+  margin-bottom: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.field:last-child {
+  margin-bottom: 0;
+}
+
+.field label {
+  font-size: 12.5px;
+  color: var(--ink-muted);
+}
+
+.field input,
+.field textarea {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 10px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  resize: vertical;
+}
+
+.card {
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+}
+
+.cardTitle {
+  font-size: 14px;
+  margin: 0 0 6px;
+}
+
+.orderTitle {
+  font-size: 12.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+  margin: 18px 0 8px;
+}
+
+.hint {
+  font-size: 12.5px;
+  color: var(--ink-muted);
+  line-height: 1.5;
+  margin: 0 0 12px;
+}
+
+.checkList {
+  max-height: 280px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 4px 10px;
+}
+
+.checkRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 13px;
+  border-bottom: 1px solid var(--line);
+}
+
+.checkRow:last-child {
+  border-bottom: none;
+}
+
+.count {
+  margin-left: auto;
+  color: var(--ink-muted);
+  font-size: 12px;
+}
+
+.orderList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.orderRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.orderRow:last-child {
+  border-bottom: none;
+}
+
+.orderName {
+  flex: 1;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.orderActions {
+  display: flex;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
+.orderActions button {
+  border: 1px solid var(--line);
+  background: var(--paper-raised);
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.orderActions button:hover:not(:disabled) {
+  background: var(--paper);
+}
+
+.orderActions button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.resetButton {
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  background: var(--paper-raised);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.resetButton:hover {
+  background: var(--paper);
+}
+
+.search {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 10px;
+  background: var(--paper-raised);
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+
+.searchResults {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 4px 10px;
+  margin-bottom: 8px;
+}
+
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.searchRow:last-child {
+  border-bottom: none;
+}
+
+.searchName {
+  flex: 1;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.thumb {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: 4px;
+  background: var(--paper);
+  flex: 0 0 auto;
+}
+
+.addButton {
+  border: 1px solid var(--line);
+  background: var(--paper-raised);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.addButton:hover:not(:disabled) {
+  background: var(--paper);
+}
+
+.addButton:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.saveBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.saveButton {
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  background: var(--accent);
+  color: var(--paper-raised);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.saveButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.savedHint {
+  font-size: 13px;
+  color: var(--accent);
+}

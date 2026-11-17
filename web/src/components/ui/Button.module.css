@@ -1,0 +1,55 @@
+.btn {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  /* justify-content only centers the label as a flex item, i.e. the box
+     as a whole — with `all: unset` resetting text-align to its "start"
+     initial value, a label that wraps to 2 lines (long CTAs like the
+     checkout submit button) still had its second line hugging the left
+     edge instead of sitting under the first line's center. */
+  text-align: center;
+  border-radius: var(--r-sm);
+  padding: 13px 24px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.primary {
+  background: var(--botanical);
+  color: var(--paper-raised);
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--botanical-deep);
+}
+
+.outline {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.outline:hover:not(:disabled) {
+  background: var(--line-strong);
+}
+
+.block {
+  width: 100%;
+}

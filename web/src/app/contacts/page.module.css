@@ -1,0 +1,88 @@
+.layout {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: var(--s7);
+  padding: var(--s6);
+}
+
+.title {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: var(--s6) var(--s6) 0;
+  font-size: 24px;
+}
+
+.dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--s2) var(--s4);
+  font-size: 13.5px;
+  margin: 0 0 var(--s6);
+}
+
+.dl dt {
+  color: color-mix(in srgb, var(--ink) 50%, transparent);
+}
+
+.dl dd {
+  margin: 0;
+}
+
+.communityCard {
+  background: var(--paper-raised);
+  box-shadow: var(--shadow);
+  border-radius: var(--r-md);
+  padding: var(--s5);
+  font-size: 13.5px;
+}
+
+.communityCard a {
+  position: relative;
+  color: var(--botanical-deep);
+  text-decoration: underline;
+}
+
+.communityCard a::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, 48px);
+  height: max(100%, 48px);
+  transform: translate(-50%, -50%);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+}
+
+.success {
+  background: var(--paper-raised);
+  box-shadow: var(--shadow);
+  border-radius: var(--r-lg);
+  padding: var(--s6);
+  font-size: 14px;
+}
+
+@media (max-width: 767px) {
+  .layout {
+    grid-template-columns: 1fr;
+    gap: var(--s5);
+    padding: var(--s4);
+  }
+  .title {
+    padding: var(--s4) var(--s4) 0;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .layout {
+    grid-template-columns: 1fr;
+    gap: var(--s6);
+    padding: var(--s5);
+  }
+}

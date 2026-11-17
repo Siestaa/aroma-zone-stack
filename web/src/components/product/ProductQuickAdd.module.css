@@ -1,0 +1,75 @@
+.addBtn {
+  /* Explicit resets, not `all: unset` — that also resets `position`, and
+     this button is always used via an absolutely-positioned overlay class
+     from the embedding card (see ProductCard.module.css's .cartOverlay).
+     Hit this exact bug once already with FavoriteButton — see its CSS. */
+  box-sizing: border-box;
+  border: none;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 48px minimum touch target (WCAG 2.5.5 / common mobile-tap guidance) —
+     was 30px, too small to reliably tap. Matches FavoriteButton's .btn. */
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--paper-raised) 85%, transparent);
+  box-shadow: var(--shadow);
+  color: var(--botanical-deep);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.addBtn:hover {
+  transform: scale(1.08);
+}
+
+.addBtn svg {
+  width: 22px;
+  height: 22px;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  background: var(--botanical);
+  border-radius: var(--r-pill);
+  box-shadow: var(--shadow);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--paper-raised);
+  overflow: hidden;
+}
+
+.stepper button {
+  box-sizing: border-box;
+  border: none;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  appearance: none;
+  background: none;
+  width: 40px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.stepper button:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.stepper .n {
+  width: 24px;
+  text-align: center;
+}

@@ -1,0 +1,11 @@
+{
+  "name": "scraper",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test-run": "node scrape-catalog.js --limit=20 --out=test-output.csv"
+  },
+  "license": "ISC",
+  "description": "Scrapes the aroma-zone.com product catalog into CSV."
+}

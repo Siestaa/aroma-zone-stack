@@ -1,0 +1,39 @@
+.thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 120px;
+  border-radius: var(--r-md);
+  background: var(--paper);
+  overflow: hidden;
+}
+
+.onRaised {
+  background: var(--paper-raised);
+}
+
+.sm {
+  height: 64px;
+  width: 64px;
+  flex: 0 0 auto;
+  border-radius: var(--r-sm);
+}
+
+.lg {
+  height: 280px;
+  border-radius: var(--r-lg);
+}
+
+.img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.placeholder {
+  width: 60%;
+  height: 60%;
+  border-radius: var(--r-sm);
+  background: var(--botanical);
+  opacity: 0.25;
+}

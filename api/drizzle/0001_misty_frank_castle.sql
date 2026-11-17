@@ -1,0 +1,1 @@
+ALTER TABLE "products" ADD COLUMN "bio" boolean DEFAULT false NOT NULL;

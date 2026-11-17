@@ -1,0 +1,77 @@
+.bar {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  height: var(--tabbar-h);
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--paper-raised);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -4px 16px rgba(21, 23, 27, 0.06);
+}
+
+@media (max-width: 767px) {
+  .bar {
+    display: flex;
+    align-items: stretch;
+  }
+}
+
+.tab {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: color-mix(in srgb, var(--ink) 55%, transparent);
+  /* No CSS transition here on purpose: this bar is pinned via its own
+     view-transition-name (see globals.css), and a live CSS transition
+     racing the browser's view-transition snapshot swap on every nav is
+     what caused the visible jitter — the active-tab state changes
+     instantly now, which reads as a clean cut rather than a flicker. */
+}
+
+.tab[data-active="true"] {
+  color: var(--botanical-deep);
+}
+
+.iconWrap {
+  position: relative;
+  display: flex;
+  padding: 4px 14px;
+  border-radius: var(--r-sm);
+}
+
+.iconWrap svg {
+  width: 22px;
+  height: 22px;
+}
+
+.tab[data-active="true"] .iconWrap {
+  background: color-mix(in srgb, var(--botanical) 14%, transparent);
+}
+
+.label {
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 4px;
+  border-radius: var(--r-pill);
+  background: var(--botanical);
+  color: var(--paper-raised);
+  font-size: 9.5px;
+  font-weight: 700;
+}

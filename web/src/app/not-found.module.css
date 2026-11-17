@@ -1,0 +1,22 @@
+.wrap {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--s9) var(--s6);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s6);
+}
+
+.illustration {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 767px) {
+  .wrap {
+    padding: var(--s6) var(--s4);
+  }
+}

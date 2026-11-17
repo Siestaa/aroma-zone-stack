@@ -1,0 +1,31 @@
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.status::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.delivered {
+  color: var(--status-delivered);
+}
+
+.transit {
+  color: var(--status-transit);
+}
+
+.collecting {
+  color: var(--status-processing);
+}
+
+.paid {
+  color: var(--status-paid);
+}

@@ -1,0 +1,447 @@
+:root {
+  --ink: #15171b;
+  /* Sampled straight from the logo's own circle-fill background (2026-08-19)
+     — a pale pink-lavender rather than neutral gray, ~250,245,249. Text
+     contrast checked: 16.7:1 against --ink, no change needed there.
+     --paper-raised stays pure white on purpose — cards/header need to read
+     as a distinct, brighter surface against this now-tinted page bg. */
+  --paper: #faf5f9;
+  --paper-raised: #ffffff;
+  /* --botanical(-deep) is a legacy name from the original green identity —
+     kept as-is rather than renamed across every file that reads it (many;
+     buttons, links, focus rings, badges, active nav states). Values now
+     come from the client's real logo artwork (2026-08-19): sampled/
+     clustered its actual pixels into dark/mid/light purple tones, then
+     picked values hitting roughly the same WCAG contrast ratios the old
+     green pair had against --paper-raised (~4.7:1 base, ~7.3:1 deep light-
+     side; ~7.8:1 base, ~10:1 deep dark-side) so buttons/text stay legible.
+     --amber/--rose/--status-* deliberately NOT touched — those are
+     functional colors (order-status scanning, the favorites heart reading
+     as "liked") the logo doesn't have equivalents for; forcing them into
+     the same purple family would hurt at-a-glance distinctness more than
+     it'd gain brand consistency. */
+  --botanical: #866291;
+  --botanical-deep: #53285c;
+  --amber: #c97a1e;
+  --amber-deep: #9c5d14;
+  --rose: #c4695a;
+  --line: rgba(21, 23, 27, 0.08);
+  --line-strong: rgba(21, 23, 27, 0.15);
+  --status-delivered: #1e8a4c;
+  --status-transit: #1d6fa6;
+  --status-processing: #b07a1e;
+  --status-paid: #2f8f8a;
+  --shadow: 0 1px 2px rgba(21, 23, 27, 0.04), 0 8px 24px rgba(21, 23, 27, 0.07);
+
+  --font-display: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, "Segoe UI", sans-serif;
+  --font-accent: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+
+  --r-xs: 8px;
+  --r-sm: 14px;
+  --r-md: 18px;
+  --r-lg: 24px;
+  --r-pill: 999px;
+
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+  --s8: 64px;
+  --s9: 96px;
+
+  /* mobile bottom tab bar (MobileTabBar) — shared between its own CSS and
+     body's padding-bottom below, so page content never sits underneath it */
+  --tabbar-h: 60px;
+
+  --duration-exit: 150ms;
+  --duration-enter: 210ms;
+  --duration-move: 400ms;
+
+  /* theme-toggle circle wipe — set from JS to the click coordinates before
+     document.startViewTransition() runs; the 50%/50% fallback only matters
+     if the toggle is ever triggered without a pointer event */
+  --theme-x: 50%;
+  --theme-y: 50%;
+  --theme-r: 75vmax;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #edeef0;
+    --paper: #150f13;
+    --paper-raised: #22191f;
+    --botanical: #d9b0dc;
+    --botanical-deep: #ecc9e8;
+    --amber: #e3a24e;
+    --amber-deep: #f0bd78;
+    --rose: #e0917f;
+    --line: rgba(237, 238, 240, 0.09);
+    --line-strong: rgba(237, 238, 240, 0.18);
+    --status-delivered: #52ce84;
+    --status-transit: #63b4e4;
+    --status-processing: #e2bb54;
+    --status-paid: #5cd0c9;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 28px rgba(0, 0, 0, 0.4);
+  }
+
+  html {
+    color-scheme: dark;
+  }
+}
+
+/* explicit user choice — set on <html> by the theme toggle / anti-FOUC
+   script, and must win over the prefers-color-scheme query in both
+   directions (system is dark but user picked light, or vice versa) */
+:root[data-theme="dark"] {
+  --ink: #edeef0;
+  --paper: #150f13;
+  --paper-raised: #22191f;
+  --botanical: #5fc382;
+  --botanical-deep: #8ad9a8;
+  --amber: #e3a24e;
+  --amber-deep: #f0bd78;
+  --rose: #e0917f;
+  --line: rgba(237, 238, 240, 0.09);
+  --line-strong: rgba(237, 238, 240, 0.18);
+  --status-delivered: #52ce84;
+  --status-transit: #63b4e4;
+  --status-processing: #e2bb54;
+  --status-paid: #5cd0c9;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 28px rgba(0, 0, 0, 0.4);
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --ink: #15171b;
+  --paper: #faf5f9;
+  --paper-raised: #ffffff;
+  --botanical: #866291;
+  --botanical-deep: #53285c;
+  --amber: #c97a1e;
+  --amber-deep: #9c5d14;
+  --rose: #c4695a;
+  --line: rgba(21, 23, 27, 0.08);
+  --line-strong: rgba(21, 23, 27, 0.15);
+  --status-delivered: #1e8a4c;
+  --status-transit: #1d6fa6;
+  --status-processing: #b07a1e;
+  --status-paid: #2f8f8a;
+  --shadow: 0 1px 2px rgba(21, 23, 27, 0.04), 0 8px 24px rgba(21, 23, 27, 0.07);
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html {
+  height: 100%;
+}
+
+/* Smooths Next.js's own post-navigation scroll-to-top (e.g. clicking
+   Pagination) since that's a plain script-triggered scroll, not a user
+   drag — `scroll-behavior` applies to it same as an anchor jump. Gated
+   behind no-preference so it never overrides someone's reduced-motion
+   setting. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  color: var(--ink);
+  background: var(--paper);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (max-width: 767px) {
+  body {
+    padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+  }
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--botanical);
+  outline-offset: 2px;
+}
+
+/* small set of typographic utilities reused across CSS Modules via :global() */
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.price {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Expands a small link/button's real tap target to (at least) 48x48 CSS
+   px without changing how it looks — a centered ::after sized to the
+   larger of 48px or the element's own box, layered on top so clicks
+   anywhere in that zone still land on the element itself (pseudo-elements
+   are part of their host's hit-test area, no JS needed). Apply via
+   `:global(.tap-target)` alongside a module's own class. Needs the host to
+   be `position: relative` (or `static` — this sets it, so a plain add is
+   enough) and NOT already `all: unset` *after* this rule in the same
+   selector list — position must be the last word for this element, same
+   lesson as FavoriteButton/ProductQuickAdd's CSS comments.
+   Only safe where neighboring interactive elements have enough real
+   gap to avoid two expanded zones overlapping — call sites in dense lists
+   (footer nav, catalog checkboxes) got a small real spacing bump alongside
+   this class for exactly that reason; check before reusing elsewhere. */
+.tap-target {
+  position: relative;
+}
+
+.tap-target::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, 48px);
+  height: max(100%, 48px);
+  transform: translate(-50%, -50%);
+}
+
+/* ---------- view transitions ---------- */
+
+/* let clicks pass through to the live page while a transition plays */
+::view-transition {
+  pointer-events: none;
+}
+
+@keyframes fade {
+  from {
+    filter: blur(3px);
+    opacity: 0;
+  }
+  to {
+    filter: blur(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-y {
+  from {
+    transform: translateY(var(--slide-y-offset, 10px));
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide {
+  from {
+    translate: var(--slide-offset);
+  }
+  to {
+    translate: 0;
+  }
+}
+
+@keyframes via-blur {
+  30% {
+    filter: blur(3px);
+  }
+}
+
+/* fade — lateral / unordered swaps */
+::view-transition-old(.fade-out) {
+  animation: var(--duration-exit) ease-in fade reverse;
+}
+::view-transition-new(.fade-in) {
+  animation: var(--duration-enter) ease-out var(--duration-exit) both fade;
+}
+
+/* suspense reveal — skeleton hands off to real content */
+::view-transition-old(.slide-down) {
+  animation:
+    var(--duration-exit) ease-out both fade reverse,
+    var(--duration-exit) ease-out both slide-y reverse;
+}
+::view-transition-new(.slide-up) {
+  animation:
+    var(--duration-enter) ease-in var(--duration-exit) both fade,
+    var(--duration-move) ease-in both slide-y;
+}
+
+/* directional navigation — hierarchical nav (catalog -> product, etc.) */
+::view-transition-old(.nav-forward) {
+  --slide-offset: -60px;
+  animation:
+    var(--duration-exit) ease-in both fade reverse,
+    var(--duration-move) ease-in-out both slide reverse;
+}
+::view-transition-new(.nav-forward) {
+  --slide-offset: 60px;
+  animation:
+    var(--duration-enter) ease-out var(--duration-exit) both fade,
+    var(--duration-move) ease-in-out both slide;
+}
+::view-transition-old(.nav-back) {
+  --slide-offset: 60px;
+  animation:
+    var(--duration-exit) ease-in both fade reverse,
+    var(--duration-move) ease-in-out both slide reverse;
+}
+::view-transition-new(.nav-back) {
+  --slide-offset: -60px;
+  animation:
+    var(--duration-enter) ease-out var(--duration-exit) both fade,
+    var(--duration-move) ease-in-out both slide;
+}
+
+/* shared element morph — product image following its card into the detail page */
+::view-transition-group(.morph) {
+  animation-duration: var(--duration-move);
+}
+::view-transition-image-pair(.morph) {
+  animation-name: via-blur;
+}
+
+/* `default="none"` on a <ViewTransition> (PageTransition's <main> wrapper,
+   and any named/morph boundary's fallback for a transition type it doesn't
+   otherwise handle) is documented as "no animation" — but that's only true
+   if something actually zeroes out the `none` view-transition-class here.
+   Without this rule, React still assigns each unpaired old/new boundary its
+   own view-transition-group (since <main> has no explicit shared `name`, a
+   route change is a fresh instance each time, so old/new never pair up),
+   and the browser's UA default duration/fade applies to those unclaimed
+   groups. That stray fade was invisible on its own, but on an untyped nav
+   (e.g. the header's plain "Каталог" link) where a product-thumb-* morph is
+   ALSO active, the two independently-timed animations — <main>'s default
+   fade and the thumb's own morph — landed slightly out of sync, reading as
+   the arriving photo flickering/disappearing right as its card settled. */
+::view-transition-old(.none),
+::view-transition-new(.none) {
+  animation: none;
+}
+
+/* header stays put during directional slides — the user's fixed anchor */
+::view-transition-group(site-header) {
+  animation: none;
+  z-index: 100;
+}
+::view-transition-old(site-header) {
+  display: none;
+}
+::view-transition-new(site-header) {
+  animation: none;
+}
+
+/* mobile bottom tab bar. Without a name, MobileTabBar fell into the generic
+   "root" snapshot bucket during a directional nav-forward/nav-back
+   transition, so the incoming page's slide animation briefly painted over
+   the fixed bar before settling underneath it — naming it gives it its own
+   layer, pinned on top via z-index like site-header.
+   Unlike site-header, this element deliberately has NO animation/old/new
+   overrides beyond z-index — two earlier attempts at hiding/freezing the
+   old and new snapshots (display:none on old, animation:none on both) each
+   introduced a *worse* artifact: a full-bar disappearance or a blank-frame
+   flicker between the old snapshot vanishing and the new one becoming
+   ready. The default browser cross-fade is left alone on purpose: since
+   MobileTabBar.tsx reads a deferred (useDeferredValue) copy of the active
+   route rather than the live one, its rendered output is pixel-identical
+   during the capture window, so the default old→new fade has nothing
+   visible to cross-fade between and reads as fully static. */
+::view-transition-group(mobile-tab-bar) {
+  z-index: 100;
+}
+
+/* theme toggle — circle wipe from the click point, root-level so it isn't
+   scoped to any named ViewTransition. Triggered imperatively from
+   ThemeToggle via document.startViewTransition(), not React's
+   <ViewTransition> — see components/theme/ThemeToggle.tsx.
+   Scoped to html[data-theme-transition] (set/cleared by useThemeToggle.ts
+   around its own transition) rather than left unconditional — the "root"
+   pseudo-element also catches whatever chrome a *route* navigation leaves
+   unnamed (e.g. the account sidebar, which persists across tab switches so
+   it deliberately isn't wrapped in its own ViewTransition). An unscoped
+   `animation: none` on ::view-transition-old(root) froze that chrome
+   on screen for the whole transition instead of letting it fade out. */
+@keyframes theme-circle-reveal {
+  from {
+    clip-path: circle(0px at var(--theme-x) var(--theme-y));
+  }
+  to {
+    clip-path: circle(var(--theme-r) at var(--theme-x) var(--theme-y));
+  }
+}
+
+html[data-theme-transition]::view-transition-old(root) {
+  animation: none;
+}
+
+html[data-theme-transition]::view-transition-new(root) {
+  /* new is already painted on top of old by default — growing its
+     clip-path from the click point reveals it over the old theme, the
+     same way in both directions (light->dark and dark->light) */
+  animation: var(--duration-move) ease-in-out theme-circle-reveal;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*),
+  ::view-transition-image-pair(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}

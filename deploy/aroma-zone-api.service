@@ -1,0 +1,26 @@
+# Reference systemd unit for the Fastify backend (api/). Not installed
+# automatically — copy to /etc/systemd/system/aroma-zone-api.service on the
+# VPS, adjust User/WorkingDirectory/paths, then:
+#   systemctl daemon-reload
+#   systemctl enable --now aroma-zone-api
+#
+# The daily catalog + FX-rate sync runs *inside* this same process via
+# node-cron (see api/src/index.ts) — no separate timer unit needed.
+
+[Unit]
+Description=аромазон-тут backend (Fastify + Postgres)
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=aromazone
+WorkingDirectory=/var/www/aroma-zone/api
+EnvironmentFile=/var/www/aroma-zone/api/.env
+ExecStart=/usr/bin/node dist/index.js
+Restart=on-failure
+RestartSec=5
+# Journal captures stdout/stderr (pino JSON logs) — `journalctl -u aroma-zone-api -f`
+
+[Install]
+WantedBy=multi-user.target

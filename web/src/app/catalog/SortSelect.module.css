@@ -1,0 +1,72 @@
+.trigger {
+  box-sizing: border-box;
+  border: 1px solid var(--line-strong);
+  margin: 0;
+  font: inherit;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  /* Vertical padding bumped 9px->14px for the 48px tap-target minimum. */
+  padding: 14px 14px;
+  border-radius: var(--r-pill);
+  background: var(--paper-raised);
+  font-size: 13px;
+  color: color-mix(in srgb, var(--ink) 78%, transparent);
+  cursor: pointer;
+}
+
+.trigger:hover {
+  background: var(--paper);
+}
+
+.trigger[data-placeholder] {
+  color: color-mix(in srgb, var(--ink) 50%, transparent);
+}
+
+.icon {
+  font-size: 10px;
+  color: color-mix(in srgb, var(--ink) 50%, transparent);
+}
+
+.content {
+  background: var(--paper-raised);
+  box-shadow: var(--shadow);
+  border-radius: var(--r-sm);
+  padding: 6px;
+  min-width: 180px;
+  z-index: 70;
+}
+
+.item {
+  box-sizing: border-box;
+  border: none;
+  margin: 0;
+  font: inherit;
+  appearance: none;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  /* Vertical padding bumped 8px->13.5px for the 48px tap-target minimum. */
+  padding: 13.5px 10px;
+  border-radius: var(--r-xs);
+  font-size: 13.5px;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.item[data-highlighted] {
+  background: var(--paper);
+  outline: none;
+}
+
+.item[data-state="checked"] {
+  font-weight: 600;
+  color: var(--botanical-deep);
+}
+
+.indicator {
+  color: var(--botanical-deep);
+}

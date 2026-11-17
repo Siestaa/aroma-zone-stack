@@ -1,0 +1,1 @@
+ALTER TYPE "public"."fulfillment" ADD VALUE 'cdek';

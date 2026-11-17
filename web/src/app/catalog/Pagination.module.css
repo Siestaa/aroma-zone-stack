@@ -1,0 +1,88 @@
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* var(--s3), not var(--s2) — the bigger 48px pills below need more real
+     gap between them to avoid touching. */
+  gap: var(--s3);
+  margin-top: var(--s6);
+}
+
+.pageLink,
+.pageEllipsis,
+.navDisabled {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  height: 48px;
+  padding: 0 10px;
+  border-radius: var(--r-pill);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+/* Real 48px at this width; the ≤767px override below shrinks the real box
+   back down (fitting up to 7 page pills in one row on a narrow screen) and
+   leans on this same pseudo-element to invisibly top the tap area back up
+   to 48px — `max(100%, 48px)` is a no-op here since 100% already is 48px,
+   but does the real work once the box shrinks. */
+.pageLink::after,
+.pageEllipsis::after,
+.navDisabled::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, 48px);
+  height: max(100%, 48px);
+  transform: translate(-50%, -50%);
+}
+
+.pageLink {
+  background: var(--paper-raised);
+  box-shadow: var(--shadow);
+  color: color-mix(in srgb, var(--ink) 72%, transparent);
+  transition: background-color 0.12s ease;
+}
+
+.pageLink:hover {
+  background: var(--line-strong);
+}
+
+.pageLinkActive {
+  background: var(--botanical);
+  color: var(--paper-raised);
+  font-weight: 700;
+  box-shadow: none;
+}
+
+.pageLinkActive:hover {
+  background: var(--botanical);
+}
+
+.pageEllipsis {
+  color: color-mix(in srgb, var(--ink) 45%, transparent);
+}
+
+.navDisabled {
+  color: color-mix(in srgb, var(--ink) 30%, transparent);
+}
+
+@media (max-width: 767px) {
+  .pagination {
+    /* 8px, not 6 — each item's ::after pseudo-element (above) extends 4px
+       past the real 40px box on every side to reach the 48px tap target;
+       neighbors need at least that much real gap between them or their
+       expanded zones would overlap. */
+    gap: 8px;
+  }
+  .pageLink,
+  .pageEllipsis,
+  .navDisabled {
+    min-width: 40px;
+    height: 40px;
+    padding: 0 6px;
+  }
+}

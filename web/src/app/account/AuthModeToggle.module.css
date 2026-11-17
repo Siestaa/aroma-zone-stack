@@ -1,0 +1,37 @@
+.root {
+  display: inline-flex;
+  align-self: center;
+  padding: 4px;
+  gap: 4px;
+  border-radius: var(--r-pill);
+  background: var(--paper);
+}
+
+.item {
+  box-sizing: border-box;
+  border: none;
+  margin: 0;
+  font: inherit;
+  appearance: none;
+  padding: 14px 28px;
+  border-radius: var(--r-pill);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-align: center;
+  color: color-mix(in srgb, var(--ink) 55%, transparent);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.item:hover {
+  color: var(--ink);
+}
+
+.item[data-state="checked"] {
+  background: var(--paper-raised);
+  box-shadow: var(--shadow);
+  color: var(--botanical-deep);
+}

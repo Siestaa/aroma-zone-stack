@@ -1,0 +1,1 @@
+ALTER TABLE "orders" ADD COLUMN "viewed_by_admin_at" timestamp with time zone;

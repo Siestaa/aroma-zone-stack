@@ -1,0 +1,198 @@
+.crumbs {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: var(--s4) var(--s6) 0;
+  font-size: 12.5px;
+  color: color-mix(in srgb, var(--ink) 55%, transparent);
+}
+
+.crumbs a {
+  position: relative;
+}
+
+.crumbs a::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, 48px);
+  height: max(100%, 48px);
+  transform: translate(-50%, -50%);
+}
+
+.crumbs a:hover {
+  text-decoration: underline;
+  color: var(--botanical-deep);
+}
+
+.layout {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: var(--s7);
+  padding: var(--s6);
+  align-items: start;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s6);
+}
+
+.group h2 {
+  font-size: 16px;
+  margin-bottom: var(--s3);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+}
+
+.summary {
+  background: var(--paper-raised);
+  box-shadow: var(--shadow);
+  border-radius: var(--r-lg);
+  padding: var(--s5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  position: sticky;
+  top: calc(var(--s6) + 64px);
+}
+
+.recapEyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ink) 55%, transparent);
+}
+
+.recap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  padding-bottom: var(--s3);
+  border-bottom: 1px solid var(--line);
+}
+
+.recapRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--s3);
+  font-size: 13px;
+}
+
+.recapRow .qty {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: color-mix(in srgb, var(--ink) 48%, transparent);
+  margin-left: 4px;
+}
+
+.formatBadge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: var(--r-pill);
+  font-size: 11px;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--botanical) 15%, transparent);
+  color: var(--botanical-deep);
+}
+
+.recapRow :global(.mono) {
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--s3);
+  font-size: 13.5px;
+}
+
+.line :global(.mono) {
+  font-size: 13px;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--s3);
+  font-size: 15.5px;
+  font-weight: 700;
+  padding-top: var(--s3);
+  border-top: 1px solid var(--line);
+}
+
+.total :global(.mono) {
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.disclaimer {
+  font-size: 12px;
+  color: color-mix(in srgb, var(--ink) 55%, transparent);
+}
+
+/* .group isn't a flex container (only .stack inside it has its own gap),
+   so a .disclaimer used directly inside one — the CDEK note above the
+   address fields — had no spacing pushing the Field label below it away;
+   .summary's own flex gap already handles this everywhere else .disclaimer
+   is used, so this only needs to apply here. */
+.group .disclaimer {
+  margin-bottom: var(--s4);
+}
+
+.success {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--s9) var(--s6);
+  text-align: center;
+}
+
+.success h1 {
+  font-size: 26px;
+  margin-bottom: var(--s3);
+}
+
+.success p {
+  color: color-mix(in srgb, var(--ink) 72%, transparent);
+  margin-bottom: var(--s3);
+}
+
+@media (max-width: 767px) {
+  .layout {
+    grid-template-columns: 1fr;
+    gap: var(--s5);
+    padding: var(--s4);
+  }
+  .crumbs {
+    padding: var(--s3) var(--s4) 0;
+  }
+  .summary {
+    position: static;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .layout {
+    grid-template-columns: 1fr;
+    gap: var(--s6);
+    padding: var(--s5);
+  }
+  .summary {
+    position: static;
+  }
+}

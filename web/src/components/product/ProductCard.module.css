@@ -1,0 +1,92 @@
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  background: var(--paper-raised);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow);
+  padding: var(--s3);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.thumbWrap {
+  position: relative;
+}
+
+.tagOverlay {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+}
+
+/* favOverlay and cartOverlay are both positioned relative to .card (not
+   .thumbWrap) on purpose, with the same `right` value — mirrored top/bottom
+   so they sit on one shared vertical line at the card's corner, like a
+   single consistent action rail rather than two independently-placed
+   buttons. */
+.favOverlay {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+}
+
+.cartOverlay {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  z-index: 1;
+}
+
+.name {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  transition: color 0.15s ease;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card:hover .name {
+  color: var(--botanical-deep);
+}
+
+.latin {
+  font-family: var(--font-accent);
+  font-style: italic;
+  font-size: 12.5px;
+  color: color-mix(in srgb, var(--ink) 62%, transparent);
+  margin: -4px 0 0;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 2px;
+  /* Reserve room for .cartOverlay, which now floats over the whole card's
+     bottom-right corner rather than just the thumbnail — without this the
+     out-of-stock pill (right-aligned via space-between) would sit right
+     under the button. A lone price has nothing to push against space-
+     between with, so it just stays left-anchored regardless. */
+  padding-right: 38px;
+}
+
+.formatTag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--botanical-deep);
+  opacity: 0.85;
+}
