@@ -1,4 +1,5 @@
 import { and, eq, gt, lt, lte } from "drizzle-orm";
+import nodemailer from "nodemailer";
 import { db } from "../db/client.js";
 import { emailOutbox, type orderItems, type orders } from "../db/schema.js";
 
@@ -6,7 +7,15 @@ const API_URL = process.env.UNISENDER_API_URL ?? "https://go2.unisender.ru/ru/tr
 class EmailDeliveryError extends Error {}
 
 export function mailConfigured(): boolean {
-  return Boolean(process.env.UNISENDER_API_KEY && process.env.EMAIL_FROM);
+  if (!process.env.EMAIL_FROM?.trim()) return false;
+  const transport = process.env.EMAIL_TRANSPORT ?? "unisender";
+  if (transport === "smtp") {
+    const port = Number(process.env.SMTP_PORT ?? "587");
+    return Boolean(process.env.SMTP_HOST?.trim() && process.env.SMTP_USER?.trim() && process.env.SMTP_PASSWORD)
+      && Number.isInteger(port) && port > 0 && port <= 65535
+      && [undefined, "true", "false"].includes(process.env.SMTP_SECURE);
+  }
+  return transport === "unisender" && Boolean(process.env.UNISENDER_API_KEY?.trim());
 }
 
 export function publicWebUrl(): URL {
@@ -29,6 +38,10 @@ export async function queueEmail(
 
 export async function sendEmail(message: typeof emailOutbox.$inferSelect): Promise<void> {
   if (!mailConfigured()) throw new Error("Email delivery is not configured");
+  if (process.env.EMAIL_TRANSPORT === "smtp") {
+    await sendSmtpEmail(message);
+    return;
+  }
   const response = await fetch(`${API_URL.replace(/\/$/, "")}/email/send.json`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "X-API-KEY": process.env.UNISENDER_API_KEY! },
@@ -53,6 +66,43 @@ export async function sendEmail(message: typeof emailOutbox.$inferSelect): Promi
     // Provider responses may contain addresses or message content. Log only codes.
     const code = typeof result.code === "number" ? result.code : "unknown";
     throw new EmailDeliveryError(`Unisender HTTP ${response.status}, code ${code}`);
+  }
+}
+
+async function sendSmtpEmail(message: typeof emailOutbox.$inferSelect): Promise<void> {
+  const port = Number(process.env.SMTP_PORT ?? "587");
+  const secure = process.env.SMTP_SECURE === undefined ? port === 465 : process.env.SMTP_SECURE === "true";
+  const transport = nodemailer.createTransport({
+    host: process.env.SMTP_HOST!.trim(),
+    port,
+    secure,
+    requireTLS: !secure,
+    auth: { user: process.env.SMTP_USER!, pass: process.env.SMTP_PASSWORD! },
+    connectionTimeout: 10_000,
+    greetingTimeout: 10_000,
+    socketTimeout: 10_000,
+    disableFileAccess: true,
+    disableUrlAccess: true,
+  });
+  try {
+    const result = await transport.sendMail({
+      from: { name: process.env.EMAIL_FROM_NAME ?? "Аромазон-тут", address: process.env.EMAIL_FROM! },
+      to: { address: message.recipient, name: "" },
+      replyTo: message.replyTo ?? process.env.EMAIL_REPLY_TO,
+      subject: message.subject,
+      text: message.body,
+      messageId: `<${message.id}@${process.env.EMAIL_FROM!.split("@").at(-1)}>`,
+    });
+    if (!result.accepted.some((address) => String(address).toLowerCase() === message.recipient.toLowerCase())) {
+      throw new EmailDeliveryError("SMTP recipient was not accepted");
+    }
+  } catch (error) {
+    if (error instanceof EmailDeliveryError) throw error;
+    // SMTP errors can include private addresses and message content.
+    const code = (error as { responseCode?: unknown })?.responseCode;
+    throw new EmailDeliveryError(`SMTP delivery failed, response ${typeof code === "number" ? code : "unavailable"}`);
+  } finally {
+    transport.close();
   }
 }
 

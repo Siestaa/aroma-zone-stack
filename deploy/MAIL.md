@@ -1,4 +1,4 @@
-# Почта Unisender Go
+# Отправка почты
 
 Сервис отправляет письма покупателю при оформлении заказа, изменении статуса,
 добавлении или замене трек-ссылки, запросе восстановления и смене пароля.
@@ -7,16 +7,17 @@
 
 ## Настройка отправителя
 
-В аккаунте Unisender Go добавьте домен отправителя `email.аромазон.рф` и перенесите в DNS Beget
+В аккаунте Unisender Go добавьте домен отправителя `аромазон.рф` и перенесите в DNS Beget
 записи SPF и DKIM, показанные сервисом. Дождитесь успешной проверки домена.
 Публичный адрес витрины — `https://xn--80aavshcdl.xn--p1ai`.
 
 В `/var/www/aroma-zone/api/.env` заполните следующие значения.
 
 ```dotenv
+EMAIL_TRANSPORT=unisender
 UNISENDER_API_KEY=ключ_из_аккаунта_Unisender_Go
 UNISENDER_API_URL=https://go2.unisender.ru/ru/transactional/api/v1
-EMAIL_FROM=no-reply@email.xn--80aavshcdl.xn--p1ai
+EMAIL_FROM=no-reply@xn--80aavshcdl.xn--p1ai
 EMAIL_FROM_NAME=Аромазон-тут
 EMAIL_REPLY_TO=aromazone.tut@gmail.com
 CONTACT_EMAIL=aromazone.tut@gmail.com
@@ -32,7 +33,49 @@ Unisender Go обеспечивает исходящие письма. Для п
 Ключ относится к Unisender Go, API которого описан в
 [официальном справочнике](https://godocs.unisender.ru/web-api-ref).
 
-## Выкладка
+## Переключение на SMTP.BZ
+
+После одобрения аккаунта возьмите SMTP-сервер, порт, логин и пароль из личного
+кабинета SMTP.BZ. В `/var/www/aroma-zone/api/.env` задайте:
+
+```dotenv
+EMAIL_TRANSPORT=smtp
+SMTP_HOST=сервер_из_кабинета
+SMTP_PORT=587
+SMTP_USER=SMTP_логин_из_кабинета
+SMTP_PASSWORD="SMTP_пароль_из_кабинета"
+EMAIL_FROM=no-reply@xn--80aavshcdl.xn--p1ai
+EMAIL_FROM_NAME=Аромазон-тут
+EMAIL_REPLY_TO=aromazone.tut@gmail.com
+CONTACT_EMAIL=aromazone.tut@gmail.com
+PUBLIC_WEB_URL=https://xn--80aavshcdl.xn--p1ai
+```
+
+Укажите именно порт из кабинета. Для 465 автоматически используется TLS с начала
+соединения, для 587 — обязательный STARTTLS. `SMTP_SECURE` можно не задавать.
+Для нестандартных портов провайдер может требовать `SMTP_SECURE=true` (TLS с начала
+соединения) или `false` (STARTTLS). Сертификат сервера проверяется.
+SMTP-пароль может отличаться от пароля входа в кабинет. API-ключ Unisender
+при `EMAIL_TRANSPORT=smtp` не используется. Не добавляйте повторяющиеся параметры
+в `.env`: замените существующие значения.
+
+Для переключения уже развёрнутой версии с очередью писем:
+
+```bash
+cd /var/www/aroma-zone &&
+git pull --ff-only &&
+npm --prefix api ci &&
+npm --prefix api run build &&
+sudo systemctl restart aroma-zone-api
+```
+
+Новая миграция для SMTP не нужна. После модерации оформите новый тестовый заказ
+и проверьте письма покупателю и на `CONTACT_EMAIL`. Существующие письма очереди,
+у которых остались попытки и не истёк срок, также будут отправляться через SMTP.
+SMTP не гарантирует устранение дублей при обрыве соединения после приёма письма.
+Чтобы вернуться на Unisender, задайте `EMAIL_TRANSPORT=unisender` и перезапустите API.
+
+## Первая выкладка почты
 
 На VPS под пользователем `aromazone` выполните команды после заполнения `.env`.
 
@@ -51,10 +94,11 @@ sudo systemctl restart aroma-zone-api aroma-zone-web
 Заказы и письма сохраняются в одной транзакции. Очередь обрабатывается внутри API
 каждые 30 секунд. После ошибок выполняется до восьми попыток с увеличением
 интервала. Письма хранятся до 24 часов, ссылки восстановления — до 30 минут.
-После приёма письма Unisender запись из очереди удаляется. Доставку в ящик
-проверяйте в журнале Unisender Go.
+После приёма письма выбранным провайдером запись из очереди удаляется. Доставку в ящик
+проверяйте в журнале выбранного провайдера.
 
-При отсутствии `UNISENDER_API_KEY` или `EMAIL_FROM` очередь приостанавливается.
+При отсутствии настроек выбранного транспорта или `EMAIL_FROM` очередь приостанавливается.
+Если `EMAIL_TRANSPORT` не указан, используется Unisender для совместимости.
 Формы восстановления и контактов в этом случае показывают временную недоступность.
 
 ## Проверка
