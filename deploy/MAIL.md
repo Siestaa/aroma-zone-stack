@@ -7,7 +7,7 @@
 
 ## Настройка отправителя
 
-В аккаунте Unisender Go добавьте домен отправителя и перенесите в DNS Beget
+В аккаунте Unisender Go добавьте домен отправителя `email.аромазон.рф` и перенесите в DNS Beget
 записи SPF и DKIM, показанные сервисом. Дождитесь успешной проверки домена.
 Публичный адрес витрины — `https://xn--80aavshcdl.xn--p1ai`.
 
@@ -16,10 +16,10 @@
 ```dotenv
 UNISENDER_API_KEY=ключ_из_аккаунта_Unisender_Go
 UNISENDER_API_URL=https://go2.unisender.ru/ru/transactional/api/v1
-EMAIL_FROM=orders@xn--80aavshcdl.xn--p1ai
+EMAIL_FROM=no-reply@email.xn--80aavshcdl.xn--p1ai
 EMAIL_FROM_NAME=Аромазон-тут
-EMAIL_REPLY_TO=адрес_вашего_почтового_ящика
-CONTACT_EMAIL=адрес_для_обращений_и_заказов
+EMAIL_REPLY_TO=aromazone.tut@gmail.com
+CONTACT_EMAIL=aromazone.tut@gmail.com
 PUBLIC_WEB_URL=https://xn--80aavshcdl.xn--p1ai
 ```
 
