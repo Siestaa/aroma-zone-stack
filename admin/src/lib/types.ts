@@ -1,4 +1,4 @@
-export type OrderStatus = "collecting" | "paid" | "transit" | "delivered";
+export type OrderStatus = "collecting" | "paid" | "transit" | "delivered" | "cancelled";
 // "pickup"/"post" only appear on historical orders — self-pickup and Почта
 // России were both retired, every new order is fulfilled via "cdek".
 export type Fulfillment = "pickup" | "post" | "cdek";
@@ -27,6 +27,8 @@ export interface Order {
   id: string;
   userId: string | null;
   status: OrderStatus;
+  cancellationReason: string | null;
+  cancelledAt: string | null;
   fulfillment: Fulfillment;
   city: string | null;
   address: string | null;

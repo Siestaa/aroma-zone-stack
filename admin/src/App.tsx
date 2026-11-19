@@ -10,6 +10,8 @@ import { InfoPagesPage } from "./pages/InfoPagesPage";
 import { CatalogFiltersPage } from "./catalog/CatalogFiltersPage";
 import { SettingsPage } from "./settings/SettingsPage";
 
+import { EmailTemplatesPage } from "./email/EmailTemplatesPage";
+
 function App() {
   return (
     <Routes>
@@ -23,6 +25,7 @@ function App() {
           <Route path="/home-config" element={<HomeConfigPage />} />
           <Route path="/catalog-filters" element={<CatalogFiltersPage />} />
           <Route path="/pages" element={<InfoPagesPage />} />
+          <Route path="/email-templates" element={<EmailTemplatesPage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
       </Route>

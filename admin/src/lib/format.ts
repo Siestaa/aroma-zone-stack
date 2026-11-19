@@ -27,6 +27,7 @@ export const ORDER_STATUS_LABEL: Record<string, string> = {
   paid: "Оплачено",
   transit: "В пути",
   delivered: "Доставлен",
+  cancelled: "Отменён",
 };
 
 // "pickup"/"post" only ever appear on historical orders — self-pickup and

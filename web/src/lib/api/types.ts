@@ -123,13 +123,14 @@ export interface ServerCartItem {
   productName: string;
 }
 
-export type OrderStatus = "collecting" | "paid" | "transit" | "delivered";
+export type OrderStatus = "collecting" | "paid" | "transit" | "delivered" | "cancelled";
 
 export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
   collecting: "Сбор заказа",
   paid: "Оплата подтверждена",
   transit: "Выкуплен, в пути",
   delivered: "Получен",
+  cancelled: "Отменён",
 };
 
 // "pickup"/"post" only ever appear on historical orders — self-pickup and
@@ -148,6 +149,8 @@ export interface OrderItem {
 export interface Order {
   id: string;
   status: OrderStatus;
+  cancellationReason: string | null;
+  cancelledAt: string | null;
   fulfillment: Fulfillment;
   city: string | null;
   address: string | null;

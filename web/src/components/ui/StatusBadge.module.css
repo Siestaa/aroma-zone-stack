@@ -29,3 +29,5 @@
 .paid {
   color: var(--status-paid);
 }
+
+.cancelled { color: var(--ink-muted); }

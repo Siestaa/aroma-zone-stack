@@ -1,7 +1,9 @@
 import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { db } from "../db/client.js";
-import { orders, orderStatusEnum } from "../db/schema.js";
-import { orderLink, ORDER_STATUS_MESSAGES, queueEmail } from "./emailService.js";
+import { orders, orderItems, orderStatusEnum } from "../db/schema.js";
+import { orderLink, queueTemplatedEmail, orderEmailVariables } from "./emailService.js";
+
+import { safeEmailUrl } from "./emailTemplates.js";
 
 const PAGE_SIZE = 30;
 
@@ -112,16 +114,17 @@ export class AdminOrderError extends Error {}
 // response, and that cache already has `items` loaded from the initial
 // GET; returning a bare row here would blow that away and crash the
 // items list render.
-export async function updateOrderStatus(id: string, status: (typeof orderStatusEnum.enumValues)[number]) {
+export async function updateOrderStatus(id: string, status: Exclude<(typeof orderStatusEnum.enumValues)[number], "cancelled">) {
   await db.transaction(async (tx) => {
     const [existing] = await tx.select().from(orders).where(eq(orders.id, id)).for("update");
     if (!existing) throw new AdminOrderError("Заказ не найден");
+    if (existing.status === "cancelled") throw new AdminOrderError("Отменённый заказ нельзя перевести в другой статус");
     if (existing.status === status) return;
     await tx.update(orders).set({ status }).where(eq(orders.id, id));
-    await queueEmail(tx, {
+    await queueTemplatedEmail(tx, `order_${status}`, {
       recipient: existing.contactEmail,
-      subject: `${ORDER_STATUS_MESSAGES[status]} — Аромазон-тут`,
-      body: `Здравствуйте, ${existing.contactName}!\n\n${ORDER_STATUS_MESSAGES[status]}.\nЗаказ ${id}.\n\nПодробнее: ${orderLink(existing)}`,
+      variables: orderEmailVariables(existing, await tx.query.orderItems.findMany({ where: eq(orderItems.orderId, id) })),
+      actionUrl: orderLink(existing),
     });
   });
   return getOrderById(id);
@@ -133,12 +136,29 @@ export async function updateOrderTrackingUrl(id: string, trackingUrl: string | n
   await db.transaction(async (tx) => {
     const [existing] = await tx.select().from(orders).where(eq(orders.id, id)).for("update");
     if (!existing) throw new AdminOrderError("Заказ не найден");
+    if (existing.status === "cancelled") throw new AdminOrderError("Заказ отменён");
     if (existing.trackingUrl === trackingUrl) return;
     await tx.update(orders).set({ trackingUrl }).where(eq(orders.id, id));
-    if (trackingUrl) await queueEmail(tx, {
+    if (trackingUrl) await queueTemplatedEmail(tx, "order_tracking", {
       recipient: existing.contactEmail,
-      subject: "Отслеживание заказа — Аромазон-тут",
-      body: `Здравствуйте, ${existing.contactName}!\n\nДля заказа ${id} добавлено отслеживание:\n${trackingUrl}\n\nПодробнее: ${orderLink(existing)}`,
+      variables: { ...orderEmailVariables(existing, await tx.query.orderItems.findMany({ where: eq(orderItems.orderId, id) })), tracking: trackingUrl },
+      actionUrl: safeEmailUrl(trackingUrl) ?? orderLink(existing),
+    });
+  });
+  return getOrderById(id);
+}
+
+// Cancellation and its optional notification commit together; repeated requests do not send duplicates.
+export async function cancelOrder(id: string, reason: string, notifyCustomer: boolean) {
+  await db.transaction(async tx => {
+    const [existing] = await tx.select().from(orders).where(eq(orders.id, id)).for("update");
+    if (!existing) throw new AdminOrderError("Заказ не найден");
+    if (existing.status === "cancelled") return;
+    await tx.update(orders).set({ status: "cancelled", cancellationReason: reason, cancelledAt: new Date() }).where(eq(orders.id, id));
+    if (notifyCustomer) await queueTemplatedEmail(tx, "order_cancelled", {
+      recipient: existing.contactEmail,
+      variables: { ...orderEmailVariables(existing, await tx.query.orderItems.findMany({ where: eq(orderItems.orderId, id) })), cancellation_reason: reason },
+      actionUrl: orderLink(existing),
     });
   });
   return getOrderById(id);

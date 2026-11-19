@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { db } from "../db/client.js";
-import { mailConfigured, queueEmail } from "../services/emailService.js";
+import { mailConfigured, queueTemplatedEmail } from "../services/emailService.js";
 import { allowRequest } from "../services/requestLimitService.js";
 import {
   getContactsPageContent,
@@ -26,11 +26,10 @@ export async function pagesRoutes(app: FastifyInstance) {
     if (!mailConfigured() || !process.env.CONTACT_EMAIL) {
       return reply.code(503).send({ error: "Форма временно недоступна. Напишите нам по email на странице контактов." });
     }
-    await queueEmail(db, {
+    await queueTemplatedEmail(db, "contact", {
       recipient: process.env.CONTACT_EMAIL,
       replyTo: parsed.data.email,
-      subject: "Новое обращение с сайта — Аромазон-тут",
-      body: `Имя: ${parsed.data.name}\nEmail: ${parsed.data.email}\n\n${parsed.data.message}`,
+      variables: parsed.data,
     });
     return { ok: true };
   });

@@ -82,3 +82,13 @@
   width: 100%;
   margin: 0 auto;
 }
+
+@media (max-width: 1200px) {
+  .header { flex-wrap: wrap; gap: 12px; }
+  .nav { order: 1; flex-basis: 100%; flex-wrap: wrap; }
+}
+@media (max-width: 600px) {
+  .header, .main { padding: 16px; }
+  .email { display: none; }
+  .navLink { padding: 10px; }
+}

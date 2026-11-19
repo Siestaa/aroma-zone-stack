@@ -4,7 +4,7 @@ import { and, eq, gt, sql } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { passwordResets, sessions, users } from "../db/schema.js";
 import { AuthError } from "./authService.js";
-import { mailConfigured, publicWebUrl, queueEmail } from "./emailService.js";
+import { mailConfigured, publicWebUrl, queueTemplatedEmail } from "./emailService.js";
 import { allowRequest } from "./requestLimitService.js";
 
 const hashToken = (token: string) => createHash("sha256").update(token).digest("hex");
@@ -29,10 +29,10 @@ export async function requestPasswordReset(email: string, ip: string): Promise<v
     const link = new URL("/account/reset-password", publicWebUrl());
     // The fragment stays out of HTTP access logs and referrer headers.
     link.hash = `token=${token}`;
-    await queueEmail(tx, {
+    await queueTemplatedEmail(tx, "password_reset", {
       recipient: user.email,
-      subject: "Восстановление пароля — Аромазон-тут",
-      body: `Чтобы задать новый пароль, откройте ссылку:\n${link.href}\n\nСсылка действует 30 минут и используется один раз. Если вы не запрашивали восстановление, проигнорируйте письмо.`,
+      variables: { name: user.name },
+      actionUrl: link.href,
       expiresAt,
     });
   });
@@ -55,10 +55,10 @@ export async function resetPassword(token: string, password: string): Promise<vo
     }
     await tx.update(users).set({ passwordHash }).where(eq(users.id, user.id));
     await tx.delete(sessions).where(eq(sessions.userId, user.id));
-    await queueEmail(tx, {
+    await queueTemplatedEmail(tx, "password_changed", {
       recipient: user.email,
-      subject: "Пароль изменён — Аромазон-тут",
-      body: "Пароль вашего аккаунта Аромазон-тут изменён. Войдите с новым паролем. Если вы этого не делали, восстановите пароль и свяжитесь с нами.",
+      variables: { name: user.name },
+      actionUrl: new URL("/account", publicWebUrl()).href,
     });
   });
 }

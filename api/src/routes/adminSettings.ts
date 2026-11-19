@@ -2,6 +2,9 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { AdminAuthError, confirmTotpReset, startTotpReset } from "../services/adminAuthService.js";
 import { requireAdmin } from "../services/adminAuthMiddleware.js";
+import { listEmailTemplates, saveEmailTemplate } from "../services/emailTemplateService.js";
+import { isEmailTemplateKey, validateEmailTemplate, renderEmailTemplate, PREVIEW_VARIABLES, EMAIL_TEMPLATES } from "../services/emailTemplates.js";
+import { publicWebUrl } from "../services/emailService.js";
 import {
   getCheckoutTermsContent,
   getFxMarkupRub,
@@ -25,6 +28,27 @@ const checkoutTermsSchema = z.object({
 });
 
 export async function adminSettingsRoutes(app: FastifyInstance) {
+  app.get("/settings/email-templates", async (request, reply) => {
+    if (!await requireAdmin(request, reply)) return;
+    return listEmailTemplates();
+  });
+  app.patch<{ Params: { key: string } }>("/settings/email-templates/:key", async (request, reply) => {
+    if (!await requireAdmin(request, reply)) return;
+    if (!isEmailTemplateKey(request.params.key)) return reply.code(404).send({ error: "Шаблон не найден" });
+    let template;
+    try { template = validateEmailTemplate(request.params.key, request.body); }
+    catch (error) { return reply.code(400).send({ error: error instanceof z.ZodError ? "Проверьте длину и заполнение полей шаблона" : (error as Error).message }); }
+    return saveEmailTemplate(request.params.key, template);
+  });
+  app.post<{ Params: { key: string } }>("/settings/email-templates/:key/preview", async (request, reply) => {
+    if (!await requireAdmin(request, reply)) return;
+    const key = request.params.key;
+    if (!isEmailTemplateKey(key)) return reply.code(404).send({ error: "Шаблон не найден" });
+    try {
+      const template = validateEmailTemplate(key, request.body);
+      return renderEmailTemplate(template, PREVIEW_VARIABLES, EMAIL_TEMPLATES[key].button ? new URL("/account", publicWebUrl()).href : undefined);
+    } catch (error) { return reply.code(400).send({ error: error instanceof z.ZodError ? "Проверьте длину и заполнение полей шаблона" : (error as Error).message }); }
+  });
   // Re-bind 2FA to a new device: start returns a fresh QR for the *new*
   // device, the old device's codes keep working until /confirm succeeds
   // (see adminAuthService.ts's startTotpReset/confirmTotpReset).

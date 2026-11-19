@@ -76,6 +76,7 @@ export function OrdersListPage() {
         <table className={styles.table}>
           <thead>
             <tr>
+              <th>Заказ</th>
               <th>Дата</th>
               <th>Клиент</th>
               <th>Статус</th>
@@ -86,6 +87,7 @@ export function OrdersListPage() {
           <tbody>
             {data.rows.map((order) => (
               <tr key={order.id} onClick={() => navigate(`/orders/${order.id}`)}>
+                <td title={order.id}>№ {order.id.slice(0, 8)}</td>
                 <td>{formatDate(order.createdAt)}</td>
                 <td>
                   {order.contactName}

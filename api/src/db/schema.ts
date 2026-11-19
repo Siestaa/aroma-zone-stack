@@ -20,7 +20,7 @@ import {
 // verified the transfer actually arrived (see orders.customerMarkedPaidAt
 // below for the customer's own, unverified "I paid" claim, which never
 // changes this column by itself).
-export const orderStatusEnum = pgEnum("order_status", ["collecting", "paid", "transit", "delivered"]);
+export const orderStatusEnum = pgEnum("order_status", ["collecting", "paid", "transit", "delivered", "cancelled"]);
 // "pickup"/"post" only appear on historical orders (self-pickup and Почта
 // России were both retired — every order is now shipped via CDEK, paid by
 // the customer directly to the courier on receipt, not through us). Kept
@@ -155,6 +155,7 @@ export const emailOutbox = pgTable("email_outbox", {
   recipient: text("recipient").notNull(),
   subject: text("subject").notNull(),
   body: text("body").notNull(),
+  html: text("html"),
   replyTo: text("reply_to"),
   attempts: integer("attempts").notNull().default(0),
   nextAttemptAt: timestamp("next_attempt_at", { withTimezone: true }).notNull().defaultNow(),
@@ -193,6 +194,8 @@ export const orders = pgTable("orders", {
   // null = guest order (not queryable by the buyer afterwards, per plan).
   userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
   status: orderStatusEnum("status").notNull().default("collecting"),
+  cancellationReason: text("cancellation_reason"),
+  cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
   fulfillment: fulfillmentEnum("fulfillment").notNull(),
   city: text("city"),
   address: text("address"),

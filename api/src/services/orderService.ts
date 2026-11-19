@@ -1,7 +1,7 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { orderItems, orders, productVariants } from "../db/schema.js";
-import { queueEmail, queueOrderConfirmation } from "./emailService.js";
+import { queueTemplatedEmail, queueOrderConfirmation, orderEmailVariables, adminOrderLink } from "./emailService.js";
 import { getCurrentFxRate, getHelperFeeRub, SettingsError } from "./settingsService.js";
 import { displayName } from "./translationService.js";
 
@@ -89,10 +89,10 @@ export async function createOrder(input: CreateOrderInput) {
       .returning();
 
     await queueOrderConfirmation(tx, order, insertedItems);
-    if (process.env.CONTACT_EMAIL) await queueEmail(tx, {
+    if (process.env.CONTACT_EMAIL) await queueTemplatedEmail(tx, "admin_new_order", {
       recipient: process.env.CONTACT_EMAIL,
-      subject: "Новый заказ — Аромазон-тут",
-      body: `Заказ ${order.id}\nПокупатель: ${order.contactName}\nEmail: ${order.contactEmail}\nСумма: ${order.totalRub} ₽\n\nОткройте заказ в админке.`,
+      variables: orderEmailVariables(order, insertedItems),
+      actionUrl: adminOrderLink(order),
     });
     return order;
   });
@@ -123,13 +123,13 @@ export async function markOrderPaidByCustomer(userId: string, orderId: string) {
   return db.transaction(async (tx) => {
     const [order] = await tx.select().from(orders)
       .where(and(eq(orders.id, orderId), eq(orders.userId, userId))).for("update");
-    if (!order) return null;
+    if (!order || order.status === "cancelled") return null;
     await tx.update(orders).set({ customerMarkedPaidAt: new Date() }).where(eq(orders.id, orderId));
     if (!order.customerMarkedPaidAt && process.env.CONTACT_EMAIL) {
-      await queueEmail(tx, {
+      await queueTemplatedEmail(tx, "admin_payment_marked", {
         recipient: process.env.CONTACT_EMAIL,
-        subject: "Покупатель отметил оплату — Аромазон-тут",
-        body: `Покупатель ${order.contactName} отметил оплату заказа ${order.id}. Проверьте поступление ${order.totalRub} ₽ и подтвердите оплату в админке.`,
+        variables: orderEmailVariables(order, await tx.query.orderItems.findMany({ where: eq(orderItems.orderId, order.id) })),
+        actionUrl: adminOrderLink(order),
       });
     }
     return tx.query.orders.findFirst({ where: eq(orders.id, orderId), with: { items: true } });

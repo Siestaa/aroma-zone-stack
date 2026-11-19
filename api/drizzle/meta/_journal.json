@@ -85,6 +85,20 @@
       "when": 1795073682151,
       "tag": "0011_unisender_password_reset",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1795089225040,
+      "tag": "0012_email_template_html",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1795089634350,
+      "tag": "0013_order_cancellation",
+      "breakpoints": true
     }
   ]
 }

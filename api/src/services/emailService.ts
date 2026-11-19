@@ -3,6 +3,9 @@ import nodemailer from "nodemailer";
 import { db } from "../db/client.js";
 import { emailOutbox, type orderItems, type orders } from "../db/schema.js";
 
+import { getEmailTemplate, type EmailConnection } from "./emailTemplateService.js";
+import { renderEmailTemplate, shortOrderNumber, safeEmailUrl, type EmailTemplateKey } from "./emailTemplates.js";
+
 const API_URL = process.env.UNISENDER_API_URL ?? "https://go2.unisender.ru/ru/transactional/api/v1";
 class EmailDeliveryError extends Error {}
 
@@ -28,7 +31,7 @@ export function publicWebUrl(): URL {
 
 export async function queueEmail(
   connection: Pick<typeof db, "insert">,
-  message: { recipient: string; subject: string; body: string; replyTo?: string; expiresAt?: Date },
+  message: { recipient: string; subject: string; body: string; html?: string; replyTo?: string; expiresAt?: Date },
 ): Promise<void> {
   await connection.insert(emailOutbox).values({
     ...message,
@@ -51,7 +54,8 @@ export async function sendEmail(message: typeof emailOutbox.$inferSelect): Promi
       from_name: process.env.EMAIL_FROM_NAME ?? "Аромазон-тут",
       reply_to: message.replyTo ?? process.env.EMAIL_REPLY_TO,
       subject: message.subject,
-      body: { plaintext: message.body },
+      body: { plaintext: message.body,
+      html: message.html ?? undefined, ...(message.html ? { html: message.html } : {}) },
       template_engine: "none",
       global_language: "ru",
       idempotence_key: message.id,
@@ -91,6 +95,7 @@ async function sendSmtpEmail(message: typeof emailOutbox.$inferSelect): Promise<
       replyTo: message.replyTo ?? process.env.EMAIL_REPLY_TO,
       subject: message.subject,
       text: message.body,
+      html: message.html ?? undefined,
       messageId: `<${message.id}@${process.env.EMAIL_FROM!.split("@").at(-1)}>`,
     });
     if (!result.accepted.some((address) => String(address).toLowerCase() === message.recipient.toLowerCase())) {
@@ -140,21 +145,33 @@ export function orderLink(order: Order): string {
   return new URL(order.userId ? `/account/orders/${order.id}` : "/contacts", publicWebUrl()).href;
 }
 
-export async function queueOrderConfirmation(connection: Pick<typeof db, "insert">, order: Order, items: OrderItem[]): Promise<void> {
-  const lines = items.map((item) => `— ${item.nameSnapshot}${item.capacitySnapshot ? `, ${item.capacitySnapshot}` : ""} × ${item.qty}`);
-  await queueEmail(connection, {
-    recipient: order.contactEmail,
-    subject: "Заказ принят — Аромазон-тут",
-    body: `Здравствуйте, ${order.contactName}!\n\nВаш заказ ${order.id} принят.\n\n${lines.join("\n")}\n\n` +
-      `К предоплате: ${order.totalRub.toLocaleString("ru-RU")} ₽.\n\n` +
-      (order.userId ? "Откройте заказ, нажмите «Оплатить» и следуйте инструкциям. После перевода отметьте «Я оплатил»." : "Свяжитесь с нами для уточнения оплаты заказа.") +
-      `\n\n${orderLink(order)}`,
+export function orderEmailVariables(order: Order, items: OrderItem[] = []) {
+  return {
+    name: order.contactName,
+    email: order.contactEmail,
+    order_number: shortOrderNumber(order.id),
+    total: order.totalRub.toLocaleString("ru-RU"),
+    items: items.map(item => `— ${item.nameSnapshot}${item.capacitySnapshot ? `, ${item.capacitySnapshot}` : ""} × ${item.qty}`).join("\n"),
+    payment_instructions: order.userId
+      ? "Откройте заказ, нажмите «Оплатить» и следуйте инструкциям. После перевода отметьте «Я оплатил»."
+      : "Свяжитесь с нами для уточнения оплаты заказа.",
+  };
+}
+export function adminOrderLink(order: Order): string {
+  const base = process.env.ADMIN_ORIGIN?.split(",")[0]?.trim() || "https://admin.xn--80aavshcdl.xn--p1ai";
+  return safeEmailUrl(new URL(`/orders/${order.id}`, base).href)!;
+}
+export async function queueTemplatedEmail(
+  connection: EmailConnection,
+  key: EmailTemplateKey,
+  message: { recipient: string; variables: Record<string, string>; actionUrl?: string; replyTo?: string; expiresAt?: Date },
+): Promise<void> {
+  const template = await getEmailTemplate(key, connection);
+  const rendered = renderEmailTemplate(template, message.variables, message.actionUrl);
+  await queueEmail(connection, { recipient: message.recipient, replyTo: message.replyTo, expiresAt: message.expiresAt, ...rendered });
+}
+export async function queueOrderConfirmation(connection: EmailConnection, order: Order, items: OrderItem[]): Promise<void> {
+  await queueTemplatedEmail(connection, "order_confirmation", {
+    recipient: order.contactEmail, variables: orderEmailVariables(order, items), actionUrl: orderLink(order),
   });
 }
-
-export const ORDER_STATUS_MESSAGES = {
-  collecting: "Заказ ожидает выкупа",
-  paid: "Оплата заказа подтверждена",
-  transit: "Заказ в пути",
-  delivered: "Заказ доставлен",
-} as const;

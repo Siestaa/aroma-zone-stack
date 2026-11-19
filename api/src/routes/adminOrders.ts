@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireAdmin } from "../services/adminAuthMiddleware.js";
 import {
   AdminOrderError,
+  cancelOrder,
   getOrderById,
   listOrders,
   markOrderViewedByAdmin,
@@ -17,7 +18,8 @@ const listQuerySchema = z.object({
   page: z.coerce.number().int().positive().optional(),
 });
 
-const updateStatusSchema = z.object({ status: z.enum(orderStatusEnum.enumValues) });
+const updateStatusSchema = z.object({ status: z.enum(["collecting", "paid", "transit", "delivered"]) });
+const cancelOrderSchema = z.object({ reason: z.string().trim().min(1).max(2000), notifyCustomer: z.boolean() });
 const updateTrackingUrlSchema = z.object({ trackingUrl: z.string().trim().min(1).nullable() });
 
 export async function adminOrderRoutes(app: FastifyInstance) {
@@ -39,6 +41,18 @@ export async function adminOrderRoutes(app: FastifyInstance) {
     if (!order) return reply.code(404).send({ error: "Заказ не найден" });
     await markOrderViewedByAdmin(order.id);
     return order;
+  });
+
+  app.post<{ Params: { id: string } }>("/orders/:id/cancel", async (request, reply) => {
+    if (!await requireAdmin(request, reply)) return;
+    if (!z.uuid().safeParse(request.params.id).success) return reply.code(400).send({ error: "Некорректный номер заказа" });
+    const parsed = cancelOrderSchema.safeParse(request.body);
+    if (!parsed.success) return reply.code(400).send({ error: "Укажите причину отмены (до 2000 символов) и необходимость уведомления" });
+    try { return await cancelOrder(request.params.id, parsed.data.reason, parsed.data.notifyCustomer); }
+    catch (error) {
+      if (error instanceof AdminOrderError) return reply.code(404).send({ error: error.message });
+      throw error;
+    }
   });
 
   app.patch<{ Params: { id: string } }>("/orders/:id/status", async (request, reply) => {

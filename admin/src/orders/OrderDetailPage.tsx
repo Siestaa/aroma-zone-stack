@@ -29,6 +29,16 @@ export function OrderDetailPage() {
   const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null);
   const [trackingDraft, setTrackingDraft] = useState<string | null>(null);
   const [trackingJustSaved, setTrackingJustSaved] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [notifyCustomer, setNotifyCustomer] = useState(true);
+  const cancelOrder = useMutation({
+    mutationFn: () => api.post<Order>(`/orders/${id}/cancel`, { reason: cancelReason.trim(), notifyCustomer }),
+    onSuccess: (updated) => {
+      queryClient.setQueryData(["admin-order", id], updated);
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+      setStatusDraft(null);
+    },
+  });
 
   useEffect(() => {
     if (!lightbox) return;
@@ -72,6 +82,7 @@ export function OrderDetailPage() {
         ← К списку заказов
       </button>
 
+      <h1 title={order.id}>Заказ № {order.id.slice(0, 8)}</h1>
       <div className={styles.grid}>
         <div>
           <div className={styles.card}>
@@ -189,7 +200,7 @@ export function OrderDetailPage() {
               <button
                 type="button"
                 className={styles.saveButton}
-                disabled={currentTracking === (order.trackingUrl ?? "") || updateTrackingUrl.isPending}
+                disabled={order.status === "cancelled" || cancelOrder.isPending || currentTracking === (order.trackingUrl ?? "") || updateTrackingUrl.isPending}
                 onClick={() => updateTrackingUrl.mutate(currentTracking.trim() || null)}
               >
                 Сохранить
@@ -206,9 +217,10 @@ export function OrderDetailPage() {
               <select
                 className={styles.statusSelect}
                 value={currentStatus}
+                disabled={order.status === "cancelled" || cancelOrder.isPending}
                 onChange={(e) => setStatusDraft(e.target.value as OrderStatus)}
               >
-                {Object.entries(ORDER_STATUS_LABEL).map(([value, label]) => (
+                {Object.entries(ORDER_STATUS_LABEL).filter(([value]) => value !== "cancelled" || order.status === "cancelled").map(([value, label]) => (
                   <option key={value} value={value}>
                     {label}
                   </option>
@@ -217,13 +229,29 @@ export function OrderDetailPage() {
               <button
                 type="button"
                 className={styles.saveButton}
-                disabled={currentStatus === order.status || updateStatus.isPending}
+                disabled={order.status === "cancelled" || cancelOrder.isPending || currentStatus === order.status || updateStatus.isPending}
                 onClick={() => updateStatus.mutate(currentStatus)}
               >
                 Сохранить
               </button>
             </div>
             {justSaved && <p className={styles.saved}>Статус обновлён</p>}
+            {updateStatus.isError && <p role="alert">{updateStatus.error.message}</p>}
+          </div>
+
+          <div className={styles.card}>
+            <h2 id="cancel-order-heading" className={styles.cardTitle}>{order.status === "cancelled" ? "Заказ отменён" : "Отмена заказа"}</h2>
+            {order.status === "cancelled" ? <>
+              <p className={styles.cancellationReason}>{order.cancellationReason}</p>
+              {order.cancelledAt && <p>{formatDate(order.cancelledAt)}</p>}
+            </> : <form aria-labelledby="cancel-order-heading" onSubmit={event => { event.preventDefault(); cancelOrder.mutate(); }}>
+              <label htmlFor="cancel-reason">Причина отмены *</label>
+              <textarea id="cancel-reason" name="reason" className={styles.cancelReason} required maxLength={2000} rows={4} disabled={cancelOrder.isPending} value={cancelReason} onChange={event => { setCancelReason(event.target.value); cancelOrder.reset(); }} />
+              <label className={styles.notifyLabel}><input type="checkbox" name="notifyCustomer" checked={notifyCustomer} disabled={cancelOrder.isPending} onChange={event => setNotifyCustomer(event.target.checked)} /> Отправить письмо покупателю с причиной отмены</label>
+              <p>Причина будет видна покупателю в личном кабинете. Отмена заказа не выполняет возврат денег автоматически.</p>
+              <button type="submit" className={styles.cancelButton} disabled={cancelOrder.isPending || updateStatus.isPending || updateTrackingUrl.isPending}>{cancelOrder.isPending ? "Отмена…" : "Отменить заказ"}</button>
+              <p role="alert">{cancelOrder.isError ? cancelOrder.error.message : ""}</p>
+            </form>}
           </div>
 
           <div className={styles.card}>

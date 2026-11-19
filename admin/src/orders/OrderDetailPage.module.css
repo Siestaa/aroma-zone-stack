@@ -243,3 +243,11 @@
   color: var(--accent);
   margin-top: 8px;
 }
+
+.cancelReason { display: block; width: 100%; margin-block: 8px 16px; padding: 12px; font: inherit; font-size: max(1rem, 1em); line-height: 1.5; color: var(--ink); background: var(--paper); border: 1px solid var(--ink-muted); border-radius: 8px; resize: vertical; }
+.notifyLabel { display: flex; gap: 10px; align-items: center; min-height: 48px; line-height: 1.5; }
+.cancelButton { padding: 12px 18px; min-height: 48px; border: 1px solid var(--danger); border-radius: 8px; background: var(--danger-soft); color: var(--danger); font: inherit; font-weight: 600; cursor: pointer; }
+.cancelButton:disabled { opacity: .6; cursor: wait; }
+.cancellationReason { white-space: pre-wrap; overflow-wrap: anywhere; }
+.cancelReason:focus-visible, .cancelButton:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.cancelReason:user-invalid { border-color: var(--danger); }

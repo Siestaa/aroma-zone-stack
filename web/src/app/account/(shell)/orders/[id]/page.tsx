@@ -37,6 +37,14 @@ export default async function OrderDetailPage({ params }: PageProps<"/account/or
         </div>
         <p className={styles.date}>от {new Date(order.createdAt).toLocaleDateString("ru-RU")}</p>
 
+        {order.status === "cancelled" && (
+          <div className={styles.card}>
+            <h2 className={styles.cardTitle}>Причина отмены</h2>
+            <p style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{order.cancellationReason}</p>
+            <p>Если заказ уже оплачен, свяжитесь с нами для уточнения возврата.</p>
+            <Link href="/contacts">Связаться с нами</Link>
+          </div>
+        )}
         <div className={styles.layout}>
           <div className={styles.stack}>
             <div className={styles.card}>
@@ -72,7 +80,7 @@ export default async function OrderDetailPage({ params }: PageProps<"/account/or
                 </div>
               )}
               <p className={styles.hint}>Стоимость доставки оплачивается курьеру при получении, отдельно от заказа.</p>
-              {order.trackingUrl && (
+              {order.trackingUrl && order.status !== "cancelled" && (
                 <a
                   href={order.trackingUrl}
                   target="_blank"

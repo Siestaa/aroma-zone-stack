@@ -54,6 +54,12 @@ export function AppLayout() {
             Страницы
           </NavLink>
           <NavLink
+            to="/email-templates"
+            className={({ isActive }) => `${styles.navLink} ${isActive ? styles.navLinkActive : ""}`}
+          >
+            Письма
+          </NavLink>
+          <NavLink
             to="/settings"
             className={({ isActive }) => `${styles.navLink} ${isActive ? styles.navLinkActive : ""}`}
           >
