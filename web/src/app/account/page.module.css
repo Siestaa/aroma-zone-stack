@@ -37,6 +37,19 @@
   color: var(--rose);
 }
 
+.recoveryLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  color: var(--botanical-deep);
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
 @media (max-width: 767px) {
   .wrap {
     padding: var(--s5) var(--s4);

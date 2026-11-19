@@ -9,6 +9,8 @@ import {
   verifyCredentials,
 } from "../services/authService.js";
 import { COOKIE_NAME, getOptionalUser, requireUser } from "../services/authMiddleware.js";
+import { requestPasswordReset, resetPassword } from "../services/passwordResetService.js";
+import { allowRequest } from "../services/requestLimitService.js";
 
 const registerSchema = z.object({
   name: z.string().min(2),
@@ -45,13 +47,41 @@ function publicUser(user: {
 }
 
 export async function authRoutes(app: FastifyInstance) {
+  app.post("/forgot-password", async (request, reply) => {
+    const parsed = z.object({ email: z.email().max(254) }).safeParse(request.body);
+    if (!parsed.success) return reply.code(400).send({ error: "Введите корректный email" });
+    try {
+      await requestPasswordReset(parsed.data.email.trim(), request.ip);
+    } catch {
+      request.log.error("Password reset email could not be queued");
+      return reply.code(503).send({ error: "Отправка письма временно недоступна. Попробуйте позже." });
+    }
+    return { ok: true, message: "Если этот email зарегистрирован, мы отправим ссылку для восстановления пароля." };
+  });
+
+  app.post("/reset-password", async (request, reply) => {
+    const parsed = z.object({ token: z.string().regex(/^[a-f0-9]{64}$/), password: z.string().min(8).max(128) }).safeParse(request.body);
+    if (!parsed.success) return reply.code(400).send({ error: "Проверьте ссылку и пароль (от 8 до 128 символов)" });
+    if (!await allowRequest("reset-attempt", request.ip, 30)) {
+      return reply.code(429).send({ error: "Слишком много попыток. Попробуйте позже." });
+    }
+    try {
+      await resetPassword(parsed.data.token, parsed.data.password);
+      reply.clearCookie(COOKIE_NAME, { path: "/" });
+      return { ok: true };
+    } catch (err) {
+      if (err instanceof AuthError) return reply.code(400).send({ error: err.message });
+      throw err;
+    }
+  });
+
   app.post("/register", async (request, reply) => {
     const parsed = registerSchema.safeParse(request.body);
     if (!parsed.success) return reply.code(400).send({ error: "Некорректные данные", details: parsed.error.issues });
 
     try {
       const user = await registerUser(parsed.data);
-      const session = await createSession(user.id);
+      const session = await createSession(user.id, user.passwordHash);
       reply.setCookie(COOKIE_NAME, session.token, {
         httpOnly: true,
         secure: isProd,
@@ -72,7 +102,7 @@ export async function authRoutes(app: FastifyInstance) {
 
     try {
       const user = await verifyCredentials(parsed.data.email, parsed.data.password);
-      const session = await createSession(user.id);
+      const session = await createSession(user.id, user.passwordHash);
       reply.setCookie(COOKIE_NAME, session.token, {
         httpOnly: true,
         secure: isProd,

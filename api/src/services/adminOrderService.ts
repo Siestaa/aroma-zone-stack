@@ -1,6 +1,7 @@
 import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { orders, orderStatusEnum } from "../db/schema.js";
+import { orderLink, ORDER_STATUS_MESSAGES, queueEmail } from "./emailService.js";
 
 const PAGE_SIZE = 30;
 
@@ -112,15 +113,33 @@ export class AdminOrderError extends Error {}
 // GET; returning a bare row here would blow that away and crash the
 // items list render.
 export async function updateOrderStatus(id: string, status: (typeof orderStatusEnum.enumValues)[number]) {
-  const [order] = await db.update(orders).set({ status }).where(eq(orders.id, id)).returning({ id: orders.id });
-  if (!order) throw new AdminOrderError("Заказ не найден");
-  return getOrderById(order.id);
+  await db.transaction(async (tx) => {
+    const [existing] = await tx.select().from(orders).where(eq(orders.id, id)).for("update");
+    if (!existing) throw new AdminOrderError("Заказ не найден");
+    if (existing.status === status) return;
+    await tx.update(orders).set({ status }).where(eq(orders.id, id));
+    await queueEmail(tx, {
+      recipient: existing.contactEmail,
+      subject: `${ORDER_STATUS_MESSAGES[status]} — Аромазон-тут`,
+      body: `Здравствуйте, ${existing.contactName}!\n\n${ORDER_STATUS_MESSAGES[status]}.\nЗаказ ${id}.\n\nПодробнее: ${orderLink(existing)}`,
+    });
+  });
+  return getOrderById(id);
 }
 
 // null clears the link (customer-facing "Отследить посылку" button just
 // stops showing) — same full-shape-response reasoning as updateOrderStatus.
 export async function updateOrderTrackingUrl(id: string, trackingUrl: string | null) {
-  const [order] = await db.update(orders).set({ trackingUrl }).where(eq(orders.id, id)).returning({ id: orders.id });
-  if (!order) throw new AdminOrderError("Заказ не найден");
-  return getOrderById(order.id);
+  await db.transaction(async (tx) => {
+    const [existing] = await tx.select().from(orders).where(eq(orders.id, id)).for("update");
+    if (!existing) throw new AdminOrderError("Заказ не найден");
+    if (existing.trackingUrl === trackingUrl) return;
+    await tx.update(orders).set({ trackingUrl }).where(eq(orders.id, id));
+    if (trackingUrl) await queueEmail(tx, {
+      recipient: existing.contactEmail,
+      subject: "Отслеживание заказа — Аромазон-тут",
+      body: `Здравствуйте, ${existing.contactName}!\n\nДля заказа ${id} добавлено отслеживание:\n${trackingUrl}\n\nПодробнее: ${orderLink(existing)}`,
+    });
+  });
+  return getOrderById(id);
 }

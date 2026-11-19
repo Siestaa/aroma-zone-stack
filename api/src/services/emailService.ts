@@ -1,66 +1,110 @@
-import { Resend } from "resend";
-import type { orderItems, orders } from "../db/schema.js";
+import { and, eq, gt, lt, lte } from "drizzle-orm";
+import { db } from "../db/client.js";
+import { emailOutbox, type orderItems, type orders } from "../db/schema.js";
 
-// Order-confirmation email, sent best-effort right after checkout — see
-// orderService.ts's createOrder. Optional by design: RESEND_API_KEY unset
-// (e.g. no key configured yet, or intentionally disabled) just skips
-// sending, same "off until configured" convention as CATALOG_SYNC_PROXY in
-// proxyDispatcher.ts. A send failure (bad key, Resend outage, recipient
-// rejected) is logged and swallowed, never thrown — losing a confirmation
-// email must not lose the order itself, which is already committed to the
-// DB by the time this runs.
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const API_URL = process.env.UNISENDER_API_URL ?? "https://go2.unisender.ru/ru/transactional/api/v1";
+class EmailDeliveryError extends Error {}
 
-// Resend's own shared sandbox address — works with zero setup, but Resend
-// only lets it deliver to the email the API key's account was created
-// with, not arbitrary customer addresses. Swap EMAIL_FROM to a verified
-// address on our own domain once one exists (see Resend's domain
-// verification) to actually reach real customers.
-const FROM_ADDRESS = process.env.EMAIL_FROM ?? "аромазон-тут <onboarding@resend.dev>";
+export function mailConfigured(): boolean {
+  return Boolean(process.env.UNISENDER_API_KEY && process.env.EMAIL_FROM);
+}
 
-// Base URL for the "Мои заказы" link in the email body — e.g.
-// "http://155.212.219.102" during this no-domain-yet phase, the real
-// https://<domain> once one exists. No link is included if unset.
-const PUBLIC_WEB_URL = process.env.PUBLIC_WEB_URL;
+export function publicWebUrl(): URL {
+  const url = new URL(process.env.PUBLIC_WEB_URL ?? "https://xn--80aavshcdl.xn--p1ai");
+  if (process.env.NODE_ENV === "production" && url.protocol !== "https:") {
+    throw new Error("PUBLIC_WEB_URL must use HTTPS in production");
+  }
+  return url;
+}
+
+export async function queueEmail(
+  connection: Pick<typeof db, "insert">,
+  message: { recipient: string; subject: string; body: string; replyTo?: string; expiresAt?: Date },
+): Promise<void> {
+  await connection.insert(emailOutbox).values({
+    ...message,
+    expiresAt: message.expiresAt ?? new Date(Date.now() + 24 * 60 * 60 * 1000),
+  });
+}
+
+export async function sendEmail(message: typeof emailOutbox.$inferSelect): Promise<void> {
+  if (!mailConfigured()) throw new Error("Email delivery is not configured");
+  const response = await fetch(`${API_URL.replace(/\/$/, "")}/email/send.json`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-API-KEY": process.env.UNISENDER_API_KEY! },
+    body: JSON.stringify({ message: {
+      recipients: [{ email: message.recipient }],
+      from_email: process.env.EMAIL_FROM,
+      from_name: process.env.EMAIL_FROM_NAME ?? "Аромазон-тут",
+      reply_to: message.replyTo ?? process.env.EMAIL_REPLY_TO,
+      subject: message.subject,
+      body: { plaintext: message.body },
+      template_engine: "none",
+      global_language: "ru",
+      idempotence_key: message.id,
+    } }),
+    signal: AbortSignal.timeout(10_000),
+  });
+  const result = await response.json() as { status?: string; code?: number; emails?: string[]; failed_emails?: Record<string, string> };
+  const recipient = message.recipient.toLowerCase();
+  const accepted = result.emails?.some((email) => email.toLowerCase() === recipient);
+  const rejected = Object.keys(result.failed_emails ?? {}).some((email) => email.toLowerCase() === recipient);
+  if (!response.ok || result.status !== "success" || !accepted || rejected) {
+    // Provider responses may contain addresses or message content. Log only codes.
+    const code = typeof result.code === "number" ? result.code : "unknown";
+    throw new EmailDeliveryError(`Unisender HTTP ${response.status}, code ${code}`);
+  }
+}
+
+export async function processEmailQueue(): Promise<void> {
+  await db.delete(emailOutbox).where(lte(emailOutbox.expiresAt, new Date()));
+  if (!mailConfigured()) return;
+  for (let index = 0; index < 10; index++) {
+    const processed = await db.transaction(async (tx) => {
+      const [message] = await tx.select().from(emailOutbox)
+        .where(and(lte(emailOutbox.nextAttemptAt, new Date()), gt(emailOutbox.expiresAt, new Date()), lt(emailOutbox.attempts, 8)))
+        .orderBy(emailOutbox.nextAttemptAt).limit(1).for("update", { skipLocked: true });
+      if (!message) return false;
+      try {
+        await sendEmail(message);
+        await tx.delete(emailOutbox).where(eq(emailOutbox.id, message.id));
+      } catch (error) {
+        const attempts = message.attempts + 1;
+        await tx.update(emailOutbox).set({
+          attempts,
+          nextAttemptAt: new Date(Date.now() + Math.min(3600, 60 * 2 ** message.attempts) * 1000),
+        }).where(eq(emailOutbox.id, message.id));
+        const reason = error instanceof EmailDeliveryError ? error.message : "Network or response error";
+        console.warn(`[email] Delivery attempt ${attempts} failed for queue item ${message.id}: ${reason}`);
+      }
+      return true;
+    });
+    if (!processed) break;
+  }
+}
 
 type Order = typeof orders.$inferSelect;
 type OrderItem = typeof orderItems.$inferSelect;
 
-function formatRub(rub: number): string {
-  return `${rub.toLocaleString("ru-RU")} ₽`;
+export function orderLink(order: Order): string {
+  return new URL(order.userId ? `/account/orders/${order.id}` : "/contacts", publicWebUrl()).href;
 }
 
-function renderOrderEmailText(order: Order, items: OrderItem[]): string {
-  const lines = items.map((item) => {
-    const capacity = item.capacitySnapshot ? `, ${item.capacitySnapshot}` : "";
-    return `— ${item.nameSnapshot}${capacity} × ${item.qty}`;
+export async function queueOrderConfirmation(connection: Pick<typeof db, "insert">, order: Order, items: OrderItem[]): Promise<void> {
+  const lines = items.map((item) => `— ${item.nameSnapshot}${item.capacitySnapshot ? `, ${item.capacitySnapshot}` : ""} × ${item.qty}`);
+  await queueEmail(connection, {
+    recipient: order.contactEmail,
+    subject: "Заказ принят — Аромазон-тут",
+    body: `Здравствуйте, ${order.contactName}!\n\nВаш заказ ${order.id} принят.\n\n${lines.join("\n")}\n\n` +
+      `К предоплате: ${order.totalRub.toLocaleString("ru-RU")} ₽.\n\n` +
+      (order.userId ? "Откройте заказ, нажмите «Оплатить» и следуйте инструкциям. После перевода отметьте «Я оплатил»." : "Свяжитесь с нами для уточнения оплаты заказа.") +
+      `\n\n${orderLink(order)}`,
   });
-
-  const orderLink = PUBLIC_WEB_URL ? `\n\nСмотреть заказ: ${PUBLIC_WEB_URL}/account/orders/${order.id}` : "";
-
-  return (
-    `Здравствуйте, ${order.contactName}!\n\n` +
-    `Ваш заказ принят и ждёт подтверждения.\n\n` +
-    `Состав заказа:\n${lines.join("\n")}\n\n` +
-    `К предоплате: ${formatRub(order.totalRub)}\n\n` +
-    `Чтобы оплатить — откройте «Мои заказы» на сайте, зайдите в этот заказ, нажмите «Оплатить», ` +
-    `переведите сумму по показанным реквизитам и отметьте «Я оплатил». Заказ уходит в закупку ` +
-    `после того, как мы подтвердим поступление денег.${orderLink}`
-  );
 }
 
-export async function sendOrderConfirmationEmail(order: Order, items: OrderItem[]): Promise<void> {
-  if (!resend) return;
-
-  try {
-    const { error } = await resend.emails.send({
-      from: FROM_ADDRESS,
-      to: order.contactEmail,
-      subject: "Заказ принят — аромазон-тут",
-      text: renderOrderEmailText(order, items),
-    });
-    if (error) console.warn(`[emailService] send failed for order ${order.id}: ${error.message}`);
-  } catch (err) {
-    console.warn(`[emailService] send failed for order ${order.id}: ${(err as Error).message}`);
-  }
-}
+export const ORDER_STATUS_MESSAGES = {
+  collecting: "Заказ ожидает выкупа",
+  paid: "Оплата заказа подтверждена",
+  transit: "Заказ в пути",
+  delivered: "Заказ доставлен",
+} as const;

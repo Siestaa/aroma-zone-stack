@@ -31,10 +31,17 @@ export async function verifyCredentials(email: string, password: string) {
   return user;
 }
 
-export async function createSession(userId: string) {
+export async function createSession(userId: string, expectedPasswordHash?: string) {
   const token = randomBytes(32).toString("hex");
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
-  await db.insert(sessions).values({ token, userId, expiresAt });
+  await db.transaction(async (tx) => {
+    const [user] = await tx.select({ passwordHash: users.passwordHash }).from(users)
+      .where(eq(users.id, userId)).for("update");
+    if (!user || (expectedPasswordHash !== undefined && user.passwordHash !== expectedPasswordHash)) {
+      throw new AuthError("Пароль изменён. Войдите с новым паролем.");
+    }
+    await tx.insert(sessions).values({ token, userId, expiresAt });
+  });
   return { token, expiresAt };
 }
 

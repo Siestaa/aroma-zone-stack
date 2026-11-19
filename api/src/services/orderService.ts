@@ -1,7 +1,7 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { orderItems, orders, productVariants } from "../db/schema.js";
-import { sendOrderConfirmationEmail } from "./emailService.js";
+import { queueEmail, queueOrderConfirmation } from "./emailService.js";
 import { getCurrentFxRate, getHelperFeeRub, SettingsError } from "./settingsService.js";
 import { displayName } from "./translationService.js";
 
@@ -53,45 +53,49 @@ export async function createOrder(input: CreateOrderInput) {
   const helperFeeRub = await getHelperFeeRub();
   const totalRub = Math.round((subtotalEurCents / 100) * fxRate) + helperFeeRub;
 
-  const [order] = await db
-    .insert(orders)
-    .values({
-      userId: input.userId,
-      fulfillment: input.fulfillment,
-      city: input.city ?? null,
-      address: input.address ?? null,
-      comment: input.comment ?? null,
-      contactName: input.contactName,
-      contactEmail: input.contactEmail,
-      contactPhone: input.contactPhone,
-      subtotalEurCents,
-      fxRateUsed: fxRate.toFixed(4),
-      helperFeeRub,
-      totalRub,
-    })
-    .returning();
-  if (!order) throw new Error("Insert returned no order row");
+  return db.transaction(async (tx) => {
+    const [order] = await tx
+      .insert(orders)
+      .values({
+        userId: input.userId,
+        fulfillment: input.fulfillment,
+        city: input.city ?? null,
+        address: input.address ?? null,
+        comment: input.comment ?? null,
+        contactName: input.contactName,
+        contactEmail: input.contactEmail,
+        contactPhone: input.contactPhone,
+        subtotalEurCents,
+        fxRateUsed: fxRate.toFixed(4),
+        helperFeeRub,
+        totalRub,
+      })
+      .returning();
+    if (!order) throw new Error("Insert returned no order row");
 
-  const insertedItems = await db
-    .insert(orderItems)
-    .values(
-      lineItems.map(({ item, variant }) => ({
-        orderId: order.id,
-        productVariantId: variant.id,
-        skuSnapshot: variant.sku,
-        nameSnapshot: displayName(variant.product),
-        priceEurCentsSnapshot: variant.priceEurCents,
-        capacitySnapshot: variant.capacity ? `${variant.capacity} ${variant.capacityUnit ?? ""}`.trim() : null,
-        qty: item.qty,
-      }))
-    )
-    .returning();
+    const insertedItems = await tx
+      .insert(orderItems)
+      .values(
+        lineItems.map(({ item, variant }) => ({
+          orderId: order.id,
+          productVariantId: variant.id,
+          skuSnapshot: variant.sku,
+          nameSnapshot: displayName(variant.product),
+          priceEurCentsSnapshot: variant.priceEurCents,
+          capacitySnapshot: variant.capacity ? `${variant.capacity} ${variant.capacityUnit ?? ""}`.trim() : null,
+          qty: item.qty,
+        }))
+      )
+      .returning();
 
-  // Best-effort — a failed send must not fail order creation, the order is
-  // already committed above. See emailService.ts.
-  void sendOrderConfirmationEmail(order, insertedItems);
-
-  return order;
+    await queueOrderConfirmation(tx, order, insertedItems);
+    if (process.env.CONTACT_EMAIL) await queueEmail(tx, {
+      recipient: process.env.CONTACT_EMAIL,
+      subject: "Новый заказ — Аромазон-тут",
+      body: `Заказ ${order.id}\nПокупатель: ${order.contactName}\nEmail: ${order.contactEmail}\nСумма: ${order.totalRub} ₽\n\nОткройте заказ в админке.`,
+    });
+    return order;
+  });
 }
 
 export async function listMyOrders(userId: string) {
@@ -114,15 +118,20 @@ export async function getMyOrderById(userId: string, orderId: string) {
 }
 
 // Records the customer's own "I sent the money" claim from the "Оплатить"
-// modal — see schema.ts's customerMarkedPaidAt comment for why this never
-// touches `status` itself. Idempotent: clicking it again just refreshes the
-// timestamp, no harm done.
+// modal. Repeated clicks refresh the timestamp and keep one notification.
 export async function markOrderPaidByCustomer(userId: string, orderId: string) {
-  const [updated] = await db
-    .update(orders)
-    .set({ customerMarkedPaidAt: new Date() })
-    .where(and(eq(orders.id, orderId), eq(orders.userId, userId)))
-    .returning({ id: orders.id });
-  if (!updated) return null;
-  return getMyOrderById(userId, updated.id);
+  return db.transaction(async (tx) => {
+    const [order] = await tx.select().from(orders)
+      .where(and(eq(orders.id, orderId), eq(orders.userId, userId))).for("update");
+    if (!order) return null;
+    await tx.update(orders).set({ customerMarkedPaidAt: new Date() }).where(eq(orders.id, orderId));
+    if (!order.customerMarkedPaidAt && process.env.CONTACT_EMAIL) {
+      await queueEmail(tx, {
+        recipient: process.env.CONTACT_EMAIL,
+        subject: "Покупатель отметил оплату — Аромазон-тут",
+        body: `Покупатель ${order.contactName} отметил оплату заказа ${order.id}. Проверьте поступление ${order.totalRub} ₽ и подтвердите оплату в админке.`,
+      });
+    }
+    return tx.query.orders.findFirst({ where: eq(orders.id, orderId), with: { items: true } });
+  });
 }

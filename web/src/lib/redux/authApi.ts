@@ -24,6 +24,16 @@ export interface UpdateProfilePayload {
 
 const authApi = api.injectEndpoints({
   endpoints: (builder) => ({
+    sendContact: builder.mutation<{ ok: true }, { name: string; email: string; message: string }>({
+      query: (body) => ({ url: "/contact", method: "POST", body }),
+    }),
+    forgotPassword: builder.mutation<{ ok: true; message: string }, { email: string }>({
+      query: (body) => ({ url: "/auth/forgot-password", method: "POST", body }),
+    }),
+    resetPassword: builder.mutation<{ ok: true }, { token: string; password: string }>({
+      query: (body) => ({ url: "/auth/reset-password", method: "POST", body }),
+      invalidatesTags: ["User"],
+    }),
     register: builder.mutation<AuthUser, RegisterPayload>({
       query: (body) => ({ url: "/auth/register", method: "POST", body }),
       invalidatesTags: ["User", "Cart", "Favorites"],
@@ -64,4 +74,7 @@ export const {
   useLogoutMutation,
   useMeQuery,
   useUpdateProfileMutation,
+  useSendContactMutation,
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
 } = authApi;

@@ -3,9 +3,11 @@ import Fastify from "fastify";
 import fastifyCookie from "@fastify/cookie";
 import fastifyCors from "@fastify/cors";
 import cron from "node-cron";
-import { sql } from "drizzle-orm";
+import { lte, sql } from "drizzle-orm";
 import { db } from "./db/client.js";
 import { runSyncCatalog } from "./jobs/syncCatalog.js";
+import { processEmailQueue } from "./services/emailService.js";
+import { passwordResets, requestLimits } from "./db/schema.js";
 import { authRoutes } from "./routes/auth.js";
 import { productRoutes } from "./routes/products.js";
 import { cartRoutes } from "./routes/cart.js";
@@ -27,7 +29,7 @@ import {
   getPaymentRequisitesText,
 } from "./services/settingsService.js";
 
-const app = Fastify({ logger: true });
+const app = Fastify({ logger: true, trustProxy: ["127.0.0.1", "::1"] });
 
 // Only /api/admin/* needs CORS — the storefront (web/) is same-origin via
 // Nginx and never sends cross-origin requests. The admin panel is a
@@ -85,6 +87,24 @@ cron.schedule(
 );
 
 const port = Number(process.env.PORT ?? 4000);
+let sendingEmails = false;
+async function deliverEmails() {
+  if (sendingEmails) return;
+  sendingEmails = true;
+  try {
+    await processEmailQueue();
+    await db.delete(passwordResets).where(lte(passwordResets.expiresAt, new Date()));
+    await db.delete(requestLimits).where(lte(requestLimits.expiresAt, new Date()));
+  } catch {
+    app.log.error("Email queue processing failed");
+  } finally {
+    sendingEmails = false;
+  }
+}
+const mailTimer = setInterval(() => { void deliverEmails(); }, 30_000);
+mailTimer.unref();
+app.addHook("onClose", async () => { clearInterval(mailTimer); });
+void deliverEmails();
 app.listen({ port, host: "0.0.0.0" }).catch((err) => {
   app.log.error(err);
   process.exit(1);

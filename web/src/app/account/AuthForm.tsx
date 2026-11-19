@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Field } from "@/components/ui/Field";
@@ -73,6 +74,9 @@ export function AuthForm() {
                 <Field
                   label="Email"
                   type="email"
+                  autoComplete="username"
+                  spellCheck={false}
+                  required
                   placeholder="you@example.com"
                   error={loginForm.formState.errors.email?.message}
                   {...loginForm.register("email")}
@@ -80,6 +84,8 @@ export function AuthForm() {
                 <Field
                   label="Пароль"
                   type="password"
+                  autoComplete="current-password"
+                  required
                   placeholder="••••••••"
                   error={loginForm.formState.errors.password?.message}
                   {...loginForm.register("password")}
@@ -91,6 +97,7 @@ export function AuthForm() {
                     <Checkbox checked={field.value ?? false} onCheckedChange={field.onChange} label="Запомнить меня" />
                   )}
                 />
+                <Link href="/account/forgot-password" className={styles.recoveryLink}>Забыли пароль?</Link>
                 {loginError && <span className={styles.error}>{loginError}</span>}
                 <Button type="submit" block disabled={loggingIn}>
                   {loggingIn ? "Входим…" : "Войти"}
